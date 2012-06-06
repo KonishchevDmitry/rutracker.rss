@@ -13,14 +13,12 @@ import sys
 import time
 import urllib2
 
-# TODO
-#import pymongo.errors
-
 import pycl.log
 import pycl.main
+from pycl.core import Error
 
-import analysis
-from db import coll
+import rutracker.analysis
+from rutracker.db import coll
 
 LOG = logging.getLogger("rutracker")
 
@@ -28,8 +26,88 @@ _DEVELOP_MODE = False
 """True if the script is running in develop mode."""
 
 
+class Rutracker:
+    """Fetches pages from http://rutracker.org/."""
+
+    __opener = None
+    """A URL opener."""
+
+    __search_id = None
+    """Active search ID."""
+
+    __last_request_time = 0
+    """Last request time."""
+
+
+    def search(self, page):
+        """Returns the specified torrent search page."""
+
+        if self.__search_id is None:
+            self.__start_search()
+
+        url = "http://rutracker.org/forum/tracker.php?search_id={search_id}&start={start}".format(
+            search_id = self.__search_id, start = page * 50)
+
+        return self.__request(url)
+
+
+    def __login(self):
+        """Logins to rutracker.org."""
+
+        try:
+            login, password, _ = open("debug/login").read().split("\n")
+
+            cookies = cookielib.FileCookieJar("cookies")
+            opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookies))
+
+            opener.open("http://login.rutracker.org/forum/login.php",
+                "login_username={0}&login_password={1}&login=%C2%F5%EE%E4".format(login, password))
+
+            self.__opener = opener
+        except Exception as e:
+            raise Error("Unable to login to rutracker.org: {0}.", e)
+
+
+    def __request(self, url, data = None):
+        """Sends a request."""
+
+        if self.__opener is None:
+            self.__login()
+
+        max_per_second = 1
+        min_difference = 1.0 / max_per_second
+        if time.time() - self.__last_request_time < min_difference:
+            time.sleep(self.__last_request_time + min_difference - time.time())
+
+        try:
+            return self.__opener.open(url, data).read().decode("cp1251")
+        except Exception as e:
+            raise Error("Unable to fetch page {0}: {1}.", url, e)
+        finally:
+            self.__last_request_time = time.time()
+
+
+    def __start_search(self):
+        """Starts torrent search."""
+
+        try:
+            page = self.__request("http://rutracker.org/forum/tracker.php",
+                data = "prev_my=0&prev_new=0&prev_oop=0&f%5B%5D=46&f%5B%5D=2178&f%5B%5D=671&f%5B%5D=2177&f%5B%5D=251&f%5B%5D=97&f%5B%5D=851&f%5B%5D=821&f%5B%5D=2076&f%5B%5D=98&f%5B%5D=56&f%5B%5D=1469&f%5B%5D=2123&f%5B%5D=1280&f%5B%5D=876&f%5B%5D=752&f%5B%5D=1114&f%5B%5D=2380&f%5B%5D=1467&f%5B%5D=672&f%5B%5D=249&f%5B%5D=552&f%5B%5D=500&f%5B%5D=2112&f%5B%5D=1327&f%5B%5D=1468&o=1&s=2&tm=-1&pn=&nm=&submit=%CF%EE%E8%F1%EA")
+
+            match = re.search(r'<a class="pg" href="tracker.php\?search_id=([^&]+)', page)
+            if match is None:
+                raise Error("Unable to obtain search id")
+
+            self.__search_id = match.group(1)
+        except Exception as e:
+            raise Error("Failed to start torrent search: {0}.", e)
+
+
+
 def get_new_torrents():
     """Gets new torrents info."""
+
+    LOG.info("Search for new torrents...")
 
     # A regular expression for attribute name
     attribute_name_regex = "[a-zA-Z][-.a-zA-Z0-9:_]*"
@@ -62,30 +140,16 @@ def get_new_torrents():
         r".+<td" + tag_attrs_regex + ur"""\s+title=['"]Добавлен['"]""" + tag_attrs_regex + r"\s*>\s*<u>(\d+)</u>"
     , re.IGNORECASE | re.DOTALL | re.VERBOSE)
 
-    # TODO:
-    #jar = cookielib.FileCookieJar("cookies")
-    #opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(jar))
-    #
-    #login_post = "login_username=&login_password=&login=%C2%F5%EE%E4"
-    #opener.open("http://login.rutracker.org/forum/login.php", login_post)
-    #
-    #search_post="prev_my=0&prev_new=0&prev_oop=0&f%5B%5D=46&f%5B%5D=2178&f%5B%5D=671&f%5B%5D=2177&f%5B%5D=251&f%5B%5D=97&f%5B%5D=851&f%5B%5D=821&f%5B%5D=2076&f%5B%5D=98&f%5B%5D=56&f%5B%5D=1469&f%5B%5D=2123&f%5B%5D=1280&f%5B%5D=876&f%5B%5D=752&f%5B%5D=1114&f%5B%5D=2380&f%5B%5D=1467&f%5B%5D=672&f%5B%5D=249&f%5B%5D=552&f%5B%5D=500&f%5B%5D=2112&f%5B%5D=1327&f%5B%5D=1468&o=1&s=2&tm=-1&pn=&nm=&submit=%CF%EE%E8%F1%EA"
-    #torrents_page = opener.open("http://rutracker.org/forum/tracker.php", search_post).read()
-    #
-    #match = re.search(r'<a class="pg" href="tracker.php\?search_id=([^&]+)', torrents_page)
-    #if match is None:
-    #    fsdfsdf
-    #search_id = match.group(1)
+    if not _DEVELOP_MODE:
+        client = Rutracker()
 
-    for page in xrange(8, 9):
+    for page in xrange(0, 10):
+        LOG.info("Getting page %s...", page)
+
         if _DEVELOP_MODE:
-            url = str(page + 2) + ".html"
-            torrents_page = open(url).read().decode("cp1251")
-    # TODO:
-    #    time.sleep(1)
-    #    torrents_page = opener.open("http://rutracker.org/forum/tracker.php?search_id=" + search_id + "&start=" + str(page * 50)).read().decode("cp1251")
-    #    torrents_page = torrents_page.replace("\n", "")
-    #    torrents_page = torrents_page.replace("\r", "")
+            torrents_page = open("{0}.html".format(page + 1)).read().decode("cp1251")
+        else:
+            torrents_page = client.search(page)
 
         # Scan all pages every time. It's not safe to skip them by last torrent
         # ID in the database because some of them might be hidden at the
@@ -112,7 +176,7 @@ def get_new_torrents():
                 new_data = {
                     "name":        torrent_name,
                     "time":        torrent_time,
-                    "fingerprint": analysis.get_torrent_fingerprint(torrent_name),
+                    "fingerprint": rutracker.analysis.get_torrent_fingerprint(torrent_name),
                     "description": "",
                 }
 
@@ -129,7 +193,7 @@ def get_new_torrents():
 
         if counter != torrents_per_page:
             LOG.error("Error while parsing page %s: got %s torrents instead of %s",
-                url, counter, torrents_per_page)
+                page, counter, torrents_per_page)
 
 
 def main():
@@ -146,9 +210,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-    #import json
-    #torrents = coll("torrents").group([ "fingerprint" ], {}, {"count": 0}, "function(obj,prev){ prev.count++;}")
-    #torrents.sort(key = lambda a: a["count"])
-    #for i in torrents:
-    #    print json.dumps(i, ensure_ascii = False)

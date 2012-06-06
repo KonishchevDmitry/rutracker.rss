@@ -8,8 +8,7 @@ import logging
 import pycl.main
 from pycl.cli.text_table import TextTable
 
-import analysis
-from db import coll
+from rutracker.db import coll
 
 
 def main():
@@ -34,15 +33,16 @@ def main():
             size = 0
             name = ""
             for word in torrent["name"].split(" "):
-                if size + len(word) > 40:
+                if size and size + len(word) > 40:
                     name += "\n"
                     size = 0
-                name += word
-                size += len(word)
+                name += " " + word
+                size += len(word) + 1
+            torrent["name"] = torrent["name"][:20] + "\n" + torrent["name"][20:40]
             table.add_row({
                 "count": torrent["count"],
                 "group": torrent["fingerprint"],
-                "name":  torrent["name"][:40],
+                "name":  torrent["name"],
             })
         table.draw([
             { "id": "count",             "name": "Count",         "align": "right" },

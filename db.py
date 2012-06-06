@@ -6,7 +6,7 @@ import pymongo
 def coll(name):
     """Returns the specified MongoDB collection."""
 
-    return db()[name]
+    return _db()[name]
 
 
 def _db():

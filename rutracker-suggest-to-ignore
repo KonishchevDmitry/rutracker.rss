@@ -30,24 +30,15 @@ def main():
         print "Please consider to exclude the following torrent groups:"
         table = TextTable()
         for torrent in torrents:
-            size = 0
-            name = ""
-            for word in torrent["name"].split(" "):
-                if size and size + len(word) > 40:
-                    name += "\n"
-                    size = 0
-                name += " " + word
-                size += len(word) + 1
-            torrent["name"] = torrent["name"][:20] + "\n" + torrent["name"][20:40]
             table.add_row({
                 "count": torrent["count"],
                 "group": torrent["fingerprint"],
                 "name":  torrent["name"],
             })
         table.draw([
-            { "id": "count",             "name": "Count",         "align": "right" },
-            { "id": "group",    "name": "Group",                                  },
-            { "id": "name",   "name": "Name",                                 },
+            { "id": "count",  "name": "Count", "align": "right" },
+            { "id": "group",  "name": "Group", "align": "left"  },
+            { "id": "name",   "name": "Name",  "align": "left", "max_width": 100 },
         ])
         #    print u"{0}".format()
         #    print json.dumps(i, ensure_ascii = False)

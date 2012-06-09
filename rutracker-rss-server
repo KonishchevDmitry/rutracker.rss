@@ -25,8 +25,7 @@ LOG = logging.getLogger("rutracker.rss")
 def application(environ, start_response):
     """Main entry point of the WSGI application."""
 
-    # Forge Server header for the security reasons
-    http_headers = { "Server": "Apache" }
+    http_headers = {}
     http_code = "500 Internal Server Error"
 
     method = environ["REQUEST_METHOD"]
@@ -62,9 +61,8 @@ def application(environ, start_response):
                         # Take MSK timezone into account
                         + datetime.timedelta(hours = 4))
                 ) for torrent in coll("torrents").find({
-                    # TODO
-                    #"time": { "$gte": time.time() - 5 * constants.DAY_SECONDS }
-                }).sort([( "time", pymongo.DESCENDING )]).limit(5)
+                    "time": { "$gte": time.time() - 5 * constants.DAY_SECONDS }
+                }).sort([( "time", pymongo.DESCENDING )]).limit(50)
             ]
         ).to_xml("utf-8")
     except Exception as e:

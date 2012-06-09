@@ -2,8 +2,6 @@
 
 """Suggests torrents to ignore."""
 
-import logging
-
 import pycl.main
 from pycl.cli.text_table import TextTable
 

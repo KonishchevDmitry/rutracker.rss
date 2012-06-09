@@ -20,7 +20,7 @@ from pycl.core import Error
 import rutracker.analysis
 from rutracker.db import coll
 
-LOG = logging.getLogger("rutracker")
+LOG = logging.getLogger("rutracker.rss")
 
 _DEVELOP_MODE = False
 """True if the script is running in develop mode."""

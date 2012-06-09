@@ -16,7 +16,6 @@ import pycl.main
 
 from pycl import constants
 from pycl.core import Error
-from pycl.cli.text_table import TextTable
 
 from rutracker.db import coll
 
@@ -26,17 +25,19 @@ LOG = logging.getLogger("rutracker.rss")
 def application(environ, start_response):
     """Main entry point of the WSGI application."""
 
-    http_headers = []
+    # Forge Server header for the security reasons
+    http_headers = { "Server": "Apache" }
     http_code = "500 Internal Server Error"
-    method = environ.get("REQUEST_METHOD", "GET")
+
+    method = environ["REQUEST_METHOD"]
     path = environ["PATH_INFO"]
 
-    LOG.info(u"Handle %s request to %s...", method, path)
+    LOG.info(u"Handling %s request to %s...", method, path)
 
     try:
         if method != "GET":
             http_code = "405 Method Not Allowed"
-            http_headers = [( "Allow", "GET" )]
+            http_headers["Allow"] = "GET"
             raise Error("Unsupported HTTP method: {0}.", method)
 
         if path != "/rutracker.rss":
@@ -72,9 +73,9 @@ def application(environ, start_response):
     else:
         http_code = "200 OK"
         http_body = [ rss ]
-        http_headers = [( "Content-Type", "application/rss+xml" )]
+        http_headers["Content-Type"] = "application/rss+xml"
     finally:
-        start_response(http_code, http_headers + [( "Server", "test" )])
+        start_response(http_code, http_headers.items())
         return http_body
 
 

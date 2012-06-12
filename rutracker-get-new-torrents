@@ -18,7 +18,7 @@ import pycl.main
 from pycl.core import Error
 
 import rutracker.analysis
-from rutracker.db import coll
+import rutracker.torrents
 
 LOG = logging.getLogger("rutracker.rss")
 
@@ -169,7 +169,7 @@ def get_new_torrents():
                 continue
 
             torrent_id = int(torrent_id)
-            torrent = coll("torrents").find_one({ "_id": torrent_id })
+            torrent = rutracker.torrents.find_one(torrent_id)
 
             if (
                 torrent is None or
@@ -183,8 +183,7 @@ def get_new_torrents():
                     "description": "",
                 }
 
-                coll("torrents").update({ "_id": torrent_id },
-                    { "$set": new_data }, upsert = True, safe = True)
+                rutracker.torrents.update(torrent_id, new_data)
 
                 LOG.info(u"New torrent #%s:%s [%s]: %s",
                     torrent_id, new_data["time"], new_data["fingerprint"], new_data["name"])

@@ -4,11 +4,9 @@
 
 import datetime
 import logging
-import time
 
 from wsgiref.simple_server import make_server
 
-import pymongo
 from PyRSS2Gen import PyRSS2Gen
 
 import pycl.log
@@ -17,7 +15,7 @@ import pycl.main
 from pycl import constants
 from pycl.core import Error
 
-from rutracker.db import coll
+import rutracker.torrents
 
 LOG = logging.getLogger("rutracker.rss")
 
@@ -60,9 +58,8 @@ def application(environ, start_response):
                         datetime.datetime.fromtimestamp(float(torrent["time"]))
                         # Take MSK timezone into account
                         + datetime.timedelta(hours = 4))
-                ) for torrent in coll("torrents").find({
-                    "time": { "$gte": time.time() - 5 * constants.DAY_SECONDS }
-                }).sort([( "time", pymongo.DESCENDING )]).limit(50)
+                ) for torrent in rutracker.torrents.find(
+                    age = 5 * constants.DAY_SECONDS, sort = True, limit = 50)
             ]
         ).to_xml("utf-8")
     except Exception as e:

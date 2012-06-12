@@ -15,7 +15,8 @@ def main():
     pycl.main.set_environment()
 
     for rule in blacklist.find():
-        print rule["_id"]
+        print u"{rule}{regex}".format(
+            rule = rule["_id"], regex = " (regex)" if rule.get("regex", False) else "")
 
 
 if __name__ == "__main__":

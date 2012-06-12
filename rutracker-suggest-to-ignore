@@ -5,7 +5,7 @@
 import pycl.main
 from pycl.cli.text_table import TextTable
 
-from rutracker.db import coll
+import rutracker.torrents
 
 
 def main():
@@ -13,15 +13,7 @@ def main():
 
     pycl.main.set_environment()
 
-    torrents = coll("torrents").group(
-        [ "fingerprint" ], {}, { "count": 0 }, """
-        function(obj, aggregated) {
-            aggregated.name = obj.name;
-            aggregated.count++;
-        }"""
-    )
-    torrents.sort(key = lambda a: a["count"], reverse = True)
-    torrents = torrents[:50]
+    torrents = rutracker.torrents.get_stats(blacklist = True)[:50]
 
     if torrents:
         table = TextTable()
@@ -34,7 +26,7 @@ def main():
         table.draw([
             { "id": "count",  "name": "Count", "align": "right" },
             { "id": "group",  "name": "Group", "align": "left"  },
-            { "id": "name",   "name": "Name",  "align": "left", "max_width": 100 },
+            { "id": "name",   "name": "Name",  "align": "left", "max_width": 80 },
         ])
     else:
         print "There is nothing to suggest."

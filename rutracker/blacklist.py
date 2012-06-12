@@ -7,13 +7,15 @@ from pycl.core import Error
 from rutracker.db import coll
 
 
-def add(rule):
+def add(rule, regex = False):
     """Adds the specified rule."""
 
-    try:
-        coll("blacklist").insert({ "_id": rule }, safe = True)
-    except pymongo.errors.DuplicateKeyError:
-        raise Error("Rule '{rule}' already exists.", rule = _format_rule(rule))
+    if regex:
+        update = { "$set": { "regex": regex } }
+    else:
+        update = { "$unset": { "regex": True } }
+
+    coll("blacklist").update({ "_id": rule }, update, upsert = True, safe = True)
 
 
 def find():

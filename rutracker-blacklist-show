@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+
+"""Shows blacklist rules."""
+
+import sys
+
+import pycl.main
+
+from rutracker import blacklist
+
+
+def main():
+    """The script's main function."""
+
+    pycl.main.set_environment()
+
+    for rule in blacklist.find():
+        print rule["_id"]
+
+
+if __name__ == "__main__":
+    main()

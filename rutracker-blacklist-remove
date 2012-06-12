@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+
+"""Removes a rule from the blacklist."""
+
+import sys
+
+import pycl.main
+from pycl.core import Error
+from pycl.misc import to_unicode
+
+from rutracker import blacklist
+
+
+def main():
+    """The script's main function."""
+
+    pycl.main.set_environment()
+
+    if len(sys.argv) != 2:
+        sys.exit(u"Usage: {cmd} rule".format(cmd = to_unicode(sys.argv[0])))
+
+    rule = to_unicode(sys.argv[1])
+
+    try:
+        blacklist.remove(rule)
+    except Error as e:
+        sys.exit(unicode(e))
+
+
+if __name__ == "__main__":
+    main()

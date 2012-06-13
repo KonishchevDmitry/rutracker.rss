@@ -7,6 +7,7 @@ import logging
 import os
 import sys
 
+from HTMLParser import HTMLParser
 from wsgiref.simple_server import make_server
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
@@ -45,6 +46,8 @@ def application(environ, start_response):
             http_code = "404 Not Found"
             raise Error("Invalid URL.")
 
+        html_parser = HTMLParser()
+
         rss = PyRSS2Gen.RSS2(
             title = "RuTracker.org",
             link = "http://rutracker.org/",
@@ -52,7 +55,7 @@ def application(environ, start_response):
 
             items = [
                 PyRSS2Gen.RSSItem(
-                    title = torrent["name"],
+                    title = html_parser.unescape(torrent["name"]).replace("<wbr>", ""),
                     link = "http://rutracker.org/viewtopic.php?t={id}".format(id = torrent["_id"]),
                     description = torrent["description"],
                     guid = PyRSS2Gen.Guid("http://rutracker.org/viewtopic.php?t={id}&time={time}".format(

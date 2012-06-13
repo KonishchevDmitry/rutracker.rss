@@ -15,13 +15,16 @@ from rutracker.db import coll
 # TODO: blacklist
 
 
-def find(age = None, sort = False, limit = None, fields = None):
+def find(age = None, blocklist = False, sort = False, limit = None, fields = None):
     """Returns the specified torrents."""
 
     query = {}
 
     if age is not None:
         query["time"] = { "$gte": time.time() - age }
+
+    if blocklist:
+        query.update(_blacklist_query())
 
     torrents = coll("torrents").find(query, fields = fields)
 

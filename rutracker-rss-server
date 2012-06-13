@@ -7,7 +7,7 @@ import logging
 
 from wsgiref.simple_server import make_server
 
-from PyRSS2Gen import PyRSS2Gen
+import PyRSS2Gen
 
 import pycl.log
 import pycl.main
@@ -59,7 +59,8 @@ def application(environ, start_response):
                         # Take MSK timezone into account
                         + datetime.timedelta(hours = 4))
                 ) for torrent in rutracker.torrents.find(
-                    age = 5 * constants.DAY_SECONDS, sort = True, limit = 50)
+                    age = 5 * constants.DAY_SECONDS, blocklist = True, sort = True, limit = 50,
+                    fields = [ "_id", "description", "name", "time" ])
             ]
         ).to_xml("utf-8")
     except Exception as e:

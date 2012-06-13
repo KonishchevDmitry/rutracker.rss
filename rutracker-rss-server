@@ -4,8 +4,13 @@
 
 import datetime
 import logging
+import os
+import sys
 
+from HTMLParser import HTMLParser
 from wsgiref.simple_server import make_server
+
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 
 import PyRSS2Gen
 
@@ -41,6 +46,8 @@ def application(environ, start_response):
             http_code = "404 Not Found"
             raise Error("Invalid URL.")
 
+        html_parser = HTMLParser()
+
         rss = PyRSS2Gen.RSS2(
             title = "RuTracker.org",
             link = "http://rutracker.org/",
@@ -48,16 +55,12 @@ def application(environ, start_response):
 
             items = [
                 PyRSS2Gen.RSSItem(
-                    title = torrent["name"],
+                    title = html_parser.unescape(torrent["name"]).replace("<wbr>", ""),
                     link = rutracker.torrents.get_url(torrent["_id"]),
                     description = torrent["description"],
                     guid = PyRSS2Gen.Guid("{url}&time={time}".format(
                         url = rutracker.torrents.get_url(torrent["_id"]), time = torrent["time"]), isPermaLink = False),
-                    # TODO: TZ
-                    pubDate = (
-                        datetime.datetime.fromtimestamp(float(torrent["time"]))
-                        # Take MSK timezone into account
-                        + datetime.timedelta(hours = 4))
+                    pubDate = datetime.datetime.utcfromtimestamp(float(torrent["time"]))
                 ) for torrent in rutracker.torrents.find(
                     age = 5 * constants.DAY_SECONDS, blocklist = True, sort = True, limit = 50,
                     fields = [ "_id", "description", "name", "time" ])
@@ -65,26 +68,27 @@ def application(environ, start_response):
         ).to_xml("utf-8")
     except Exception as e:
         LOG.error(u"Failed to process the request to %s: %s", path, e)
-        http_body = []
+        http_headers["Content-Type"] = "text/plain"
+        http_body = [ http_code ]
     else:
         http_code = "200 OK"
-        http_body = [ rss ]
         http_headers["Content-Type"] = "application/rss+xml"
+        http_body = [ rss ]
     finally:
         start_response(http_code, http_headers.items())
         return http_body
 
 
-def main(host, port):
-    """The script's main function."""
-
-    pycl.main.set_environment()
-    pycl.log.setup()
+def serve(host, port):
+    """Simple HTTP server for development."""
 
     LOG.info(u"Running HTTP server on %s:%s...", host, port)
-    httpd = make_server(host, port, application)
-    httpd.serve_forever()
+    server = make_server(host, port, application)
+    server.serve_forever()
 
+
+pycl.main.set_environment()
+pycl.log.setup()
 
 if __name__ == "__main__":
-    main("0.0.0.0", 8080)
+    serve("0.0.0.0", 8080)

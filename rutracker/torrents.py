@@ -12,8 +12,6 @@ import pymongo
 import rutracker.blacklist
 from rutracker.db import coll
 
-# TODO: blacklist
-
 
 def find(age = None, blocklist = False, sort = False, limit = None, fields = None):
     """Returns the specified torrents."""
@@ -85,7 +83,7 @@ def get_fingerprint(torrent_name):
     # Drop any additional info: timestamps, release versions, etc.
     # -->
     torrent_name = torrent_name.replace(u"г.", "")
-    torrent_name = re.sub(ur"(:?выпуск|выпуски|серия|серии|эфир от|эфиры от|обновлено)(?:\s|$)", "", torrent_name)
+    torrent_name = re.sub(ur"(:?выпуск|выпуски|обновлено|передачи за|серия|серии|эфир от|эфиры от)(?:\s|$)", "", torrent_name)
 
     for month in (
         u"январь",   u"января",
@@ -140,6 +138,12 @@ def get_url(torrent_id):
     """Returns torrent URL."""
 
     return "http://rutracker.org/forum/viewtopic.php?t={id}".format(id = torrent_id)
+
+
+def init():
+    """Initializes torrents collection."""
+
+    coll("torrents").ensure_index([( "time", pymongo.DESCENDING )])
 
 
 def update(torrent_id, data, upsert = False):

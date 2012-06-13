@@ -7,15 +7,22 @@ database.
 """
 
 import cookielib
+import getopt
 import logging
+import os
 import re
 import sys
+import tempfile
 import time
 import urllib2
 
+import pycl.daemon
 import pycl.log
 import pycl.main
-from pycl.core import Error
+import pycl.misc
+
+from pycl.core import Error, LogicalError
+from pycl.misc import to_system_encoding
 
 import rutracker.torrents
 
@@ -23,6 +30,9 @@ LOG = logging.getLogger("rutracker.rss")
 
 _DEVELOP_MODE = False
 """True if the script is running in develop mode."""
+
+_SCRIPT_PATH = os.path.realpath(__file__)
+"""Full path to this script."""
 
 
 class Rutracker:
@@ -54,7 +64,8 @@ class Rutracker:
         """Logins to rutracker.org."""
 
         try:
-            login, password, _ = open("debug/login").read().split("\n")
+            credentials_path = os.path.join(os.path.dirname(_SCRIPT_PATH), "credentials")
+            login, password = open(credentials_path).read().strip().split("\n")
 
             cookies = cookielib.FileCookieJar("cookies")
             opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookies))
@@ -91,7 +102,7 @@ class Rutracker:
 
         try:
             page = self.__request("http://rutracker.org/forum/tracker.php",
-                data = "prev_my=0&prev_new=0&prev_oop=0&f%5B%5D=46&f%5B%5D=2178&f%5B%5D=671&f%5B%5D=2177&f%5B%5D=251&f%5B%5D=97&f%5B%5D=851&f%5B%5D=821&f%5B%5D=2076&f%5B%5D=98&f%5B%5D=56&f%5B%5D=1469&f%5B%5D=2123&f%5B%5D=1280&f%5B%5D=876&f%5B%5D=752&f%5B%5D=1114&f%5B%5D=2380&f%5B%5D=1467&f%5B%5D=672&f%5B%5D=249&f%5B%5D=552&f%5B%5D=500&f%5B%5D=2112&f%5B%5D=1327&f%5B%5D=1468&o=1&s=2&tm=-1&pn=&nm=&submit=%CF%EE%E8%F1%EA")
+                data = "prev_my=0&prev_new=0&prev_oop=0&f%5B%5D=709&f%5B%5D=46&f%5B%5D=2076&f%5B%5D=98&f%5B%5D=56&f%5B%5D=2123&f%5B%5D=249&f%5B%5D=552&f%5B%5D=500&f%5B%5D=1260&f%5B%5D=2139&o=1&s=2&tm=-1&pn=&nm=&submit=%CF%EE%E8%F1%EA")
 
             match = re.search(r'<a class="pg" href="tracker.php\?search_id=([^&]+)', page)
             if match is None:
@@ -167,14 +178,15 @@ def get_new_torrents():
         for torrent_html in torrents_page.split('<tr class="tCenter hl-tr">')[1:]:
             link_class, torrent_id, torrent_name, torrent_time = torrent_regex.search(torrent_html).group(1, 3, 4, 5)
 
-            if _DEVELOP_MODE:
-                torrent_time = time.time()
-
             link_class = link_class.split(" ")
             if "med" not in link_class or "tLink" not in link_class:
                 continue
 
             torrent_id = int(torrent_id)
+            if _DEVELOP_MODE:
+                torrent_time = time.time()
+            torrent_time = int(torrent_time)
+
             torrent = rutracker.torrents.find_one(torrent_id)
 
             if (
@@ -234,13 +246,53 @@ def get_new_torrents():
 def main():
     """The script's main function."""
 
-    global _DEVELOP_MODE
-    _DEVELOP_MODE = "--develop-mode" in sys.argv[1:]
-
     pycl.main.set_environment()
-    pycl.log.setup(_DEVELOP_MODE)
 
-    get_new_torrents()
+    # Parsing command line arguments -->
+    cron_mode = False
+    debug_mode = False
+    develop_mode = False
+
+    cmd_options, args = getopt.gnu_getopt(
+        sys.argv[1:], "", [
+            "cron",
+            "debug",
+            "develop-mode",
+        ])
+
+    for option, value in cmd_options[:]:
+        if option == "--cron":
+            cron_mode = True
+        elif option == "--debug":
+            debug_mode = True
+        elif option == "--develop-mode":
+            develop_mode = True
+        else:
+            raise LogicalError()
+    # Parsing command line arguments <--
+
+    pycl.log.setup(
+        debug_mode = debug_mode | develop_mode,
+        level = logging.ERROR if cron_mode else None)
+
+    global _DEVELOP_MODE
+    _DEVELOP_MODE = develop_mode
+
+    pid_file = os.path.join(tempfile.gettempdir(), "rutracker-get-new-torrents")
+
+    try:
+        pid_file_fd = pycl.daemon.acquire_pidfile(pid_file)
+    except pycl.daemon.PidFileLocked as e:
+        if cron_mode:
+            LOG.debug(u"Exiting: %s", e)
+        else:
+            raise
+    else:
+        try:
+            get_new_torrents()
+        finally:
+            pycl.misc.syscall_wrapper(os.close, pid_file_fd)
+            pycl.misc.syscall_wrapper(os.unlink, to_system_encoding(pid_file))
 
 
 if __name__ == "__main__":

@@ -134,6 +134,12 @@ def get_stats(blacklist = False):
     return torrents
 
 
+def init():
+    """Initializes torrents collection."""
+
+    coll("torrents").ensure_index([( "time", pymongo.DESCENDING )])
+
+
 def update(torrent_id, data, upsert = False):
     """Updates the specified torrent."""
 

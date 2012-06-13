@@ -136,6 +136,12 @@ def get_stats(blacklist = False):
     return torrents
 
 
+def get_url(torrent_id):
+    """Returns torrent URL."""
+
+    return "http://rutracker.org/forum/viewtopic.php?t={id}".format(id = torrent_id)
+
+
 def update(torrent_id, data, upsert = False):
     """Updates the specified torrent."""
 

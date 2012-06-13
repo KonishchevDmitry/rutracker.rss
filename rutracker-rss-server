@@ -49,10 +49,10 @@ def application(environ, start_response):
             items = [
                 PyRSS2Gen.RSSItem(
                     title = torrent["name"],
-                    link = "http://rutracker.org/viewtopic.php?t={id}".format(id = torrent["_id"]),
+                    link = rutracker.torrents.get_url(torrent["_id"]),
                     description = torrent["description"],
-                    guid = PyRSS2Gen.Guid("http://rutracker.org/viewtopic.php?t={id}&time={time}".format(
-                        id = torrent["_id"], time = torrent["time"]), isPermaLink = False),
+                    guid = PyRSS2Gen.Guid("{url}&time={time}".format(
+                        url = rutracker.torrents.get_url(torrent["_id"]), time = torrent["time"]), isPermaLink = False),
                     # TODO: TZ
                     pubDate = (
                         datetime.datetime.fromtimestamp(float(torrent["time"]))
@@ -64,7 +64,7 @@ def application(environ, start_response):
             ]
         ).to_xml("utf-8")
     except Exception as e:
-        LOG.error("Failed to process the request to %s: %s", path, e)
+        LOG.error(u"Failed to process the request to %s: %s", path, e)
         http_body = []
     else:
         http_code = "200 OK"
@@ -81,7 +81,7 @@ def main(host, port):
     pycl.main.set_environment()
     pycl.log.setup()
 
-    LOG.info("Running HTTP server on %s:%s...", host, port)
+    LOG.info(u"Running HTTP server on %s:%s...", host, port)
     httpd = make_server(host, port, application)
     httpd.serve_forever()
 

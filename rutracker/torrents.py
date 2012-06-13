@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """Provides functions for managing torrents."""
 
 import re
@@ -13,7 +15,7 @@ from rutracker.db import coll
 # TODO: blacklist
 
 
-def find(age = None, sort = False, limit = None):
+def find(age = None, sort = False, limit = None, fields = None):
     """Returns the specified torrents."""
 
     query = {}
@@ -21,7 +23,7 @@ def find(age = None, sort = False, limit = None):
     if age is not None:
         query["time"] = { "$gte": time.time() - age }
 
-    torrents = coll("torrents").find(query)
+    torrents = coll("torrents").find(query, fields = fields)
 
     if sort:
         torrents = torrents.sort([( "time", pymongo.DESCENDING )])

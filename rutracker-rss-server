@@ -56,9 +56,9 @@ def application(environ, start_response):
             items = [
                 PyRSS2Gen.RSSItem(
                     title = html_parser.unescape(torrent["name"]).replace("<wbr>", ""),
-                    link = "http://rutracker.org/viewtopic.php?t={id}".format(id = torrent["_id"]),
+                    link = "http://rutracker.org/forum/viewtopic.php?t={id}".format(id = torrent["_id"]),
                     description = torrent["description"],
-                    guid = PyRSS2Gen.Guid("http://rutracker.org/viewtopic.php?t={id}&time={time}".format(
+                    guid = PyRSS2Gen.Guid("http://rutracker.org/forum/viewtopic.php?t={id}&time={time}".format(
                         id = torrent["_id"], time = torrent["time"]), isPermaLink = False),
                     pubDate = datetime.datetime.utcfromtimestamp(float(torrent["time"]))
                 ) for torrent in rutracker.torrents.find(

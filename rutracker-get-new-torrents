@@ -7,16 +7,22 @@ database.
 """
 
 import cookielib
+import getopt
 import logging
 import os
 import re
 import sys
+import tempfile
 import time
 import urllib2
 
+import pycl.daemon
 import pycl.log
 import pycl.main
-from pycl.core import Error
+import pycl.misc
+
+from pycl.core import Error, LogicalError
+from pycl.misc import to_system_encoding
 
 import rutracker.torrents
 
@@ -206,13 +212,53 @@ def get_new_torrents():
 def main():
     """The script's main function."""
 
-    global _DEVELOP_MODE
-    _DEVELOP_MODE = "--develop-mode" in sys.argv[1:]
-
     pycl.main.set_environment()
-    pycl.log.setup(_DEVELOP_MODE)
 
-    get_new_torrents()
+    # Parsing command line arguments -->
+    cron_mode = False
+    debug_mode = False
+    develop_mode = False
+
+    cmd_options, args = getopt.gnu_getopt(
+        sys.argv[1:], "", [
+            "cron",
+            "debug",
+            "develop-mode",
+        ])
+
+    for option, value in cmd_options[:]:
+        if option == "--cron":
+            cron_mode = True
+        elif option == "--debug":
+            debug_mode = True
+        elif option == "--develop-mode":
+            develop_mode = True
+        else:
+            raise LogicalError()
+    # Parsing command line arguments <--
+
+    pycl.log.setup(
+        debug_mode = debug_mode | develop_mode,
+        level = logging.ERROR if cron_mode else None)
+
+    global _DEVELOP_MODE
+    _DEVELOP_MODE = develop_mode
+
+    pid_file = os.path.join(tempfile.gettempdir(), "rutracker-get-new-torrents")
+
+    try:
+        pid_file_fd = pycl.daemon.acquire_pidfile(pid_file)
+    except pycl.daemon.PidFileLocked as e:
+        if cron_mode:
+            LOG.debug(u"Exiting: %s", e)
+        else:
+            raise
+    else:
+        try:
+            get_new_torrents()
+        finally:
+            pycl.misc.syscall_wrapper(os.close, pid_file_fd)
+            pycl.misc.syscall_wrapper(os.unlink, to_system_encoding(pid_file))
 
 
 if __name__ == "__main__":

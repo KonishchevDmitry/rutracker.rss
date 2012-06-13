@@ -8,6 +8,7 @@ database.
 
 import cookielib
 import logging
+import os
 import re
 import sys
 import time
@@ -23,6 +24,9 @@ LOG = logging.getLogger("rutracker.rss")
 
 _DEVELOP_MODE = False
 """True if the script is running in develop mode."""
+
+_SCRIPT_PATH = os.path.realpath(__file__)
+"""Full path to this script."""
 
 
 class Rutracker:
@@ -54,7 +58,8 @@ class Rutracker:
         """Logins to rutracker.org."""
 
         try:
-            login, password, _ = open("debug/login").read().split("\n")
+            credentials_path = os.path.join(os.path.dirname(_SCRIPT_PATH), "credentials")
+            login, password = open(credentials_path).read().strip().split("\n")
 
             cookies = cookielib.FileCookieJar("cookies")
             opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookies))
@@ -91,7 +96,7 @@ class Rutracker:
 
         try:
             page = self.__request("http://rutracker.org/forum/tracker.php",
-                data = "prev_my=0&prev_new=0&prev_oop=0&f%5B%5D=46&f%5B%5D=2178&f%5B%5D=671&f%5B%5D=2177&f%5B%5D=251&f%5B%5D=97&f%5B%5D=851&f%5B%5D=821&f%5B%5D=2076&f%5B%5D=98&f%5B%5D=56&f%5B%5D=1469&f%5B%5D=2123&f%5B%5D=1280&f%5B%5D=876&f%5B%5D=752&f%5B%5D=1114&f%5B%5D=2380&f%5B%5D=1467&f%5B%5D=672&f%5B%5D=249&f%5B%5D=552&f%5B%5D=500&f%5B%5D=2112&f%5B%5D=1327&f%5B%5D=1468&o=1&s=2&tm=-1&pn=&nm=&submit=%CF%EE%E8%F1%EA")
+                data = "prev_my=0&prev_new=0&prev_oop=0&f%5B%5D=709&f%5B%5D=46&f%5B%5D=2076&f%5B%5D=98&f%5B%5D=56&f%5B%5D=2123&f%5B%5D=249&f%5B%5D=552&f%5B%5D=500&f%5B%5D=1260&f%5B%5D=2139&o=1&s=2&tm=-1&pn=&nm=&submit=%CF%EE%E8%F1%EA")
 
             match = re.search(r'<a class="pg" href="tracker.php\?search_id=([^&]+)', page)
             if match is None:

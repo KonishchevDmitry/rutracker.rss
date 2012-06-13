@@ -12,8 +12,6 @@ import pymongo
 import rutracker.blacklist
 from rutracker.db import coll
 
-# TODO: blacklist
-
 
 def find(age = None, blocklist = False, sort = False, limit = None, fields = None):
     """Returns the specified torrents."""

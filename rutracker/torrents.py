@@ -83,7 +83,7 @@ def get_fingerprint(torrent_name):
     # Drop any additional info: timestamps, release versions, etc.
     # -->
     torrent_name = torrent_name.replace(u"г.", "")
-    torrent_name = re.sub(ur"(:?выпуск|выпуски|серия|серии|эфир от|эфиры от|обновлено)(?:\s|$)", "", torrent_name)
+    torrent_name = re.sub(ur"(:?выпуск|выпуски|обновлено|передачи за|серия|серии|эфир от|эфиры от)(?:\s|$)", "", torrent_name)
 
     for month in (
         u"январь",   u"января",

@@ -17,7 +17,6 @@ import pycl.log
 import pycl.main
 from pycl.core import Error
 
-import rutracker.analysis
 import rutracker.torrents
 
 LOG = logging.getLogger("rutracker.rss")
@@ -179,11 +178,11 @@ def get_new_torrents():
                 new_data = {
                     "name":        torrent_name,
                     "time":        torrent_time,
-                    "fingerprint": rutracker.analysis.get_torrent_fingerprint(torrent_name),
+                    "fingerprint": rutracker.torrents.get_fingerprint(torrent_name),
                     "description": "",
                 }
 
-                rutracker.torrents.update(torrent_id, new_data)
+                rutracker.torrents.update(torrent_id, new_data, upsert = True)
 
                 LOG.info(u"New torrent #%s:%s [%s]: %s",
                     torrent_id, new_data["time"], new_data["fingerprint"], new_data["name"])

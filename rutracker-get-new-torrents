@@ -44,6 +44,9 @@ class Rutracker:
     __search_id = None
     """Active search ID."""
 
+    __search_page = None
+    """Active search page."""
+
     __last_request_time = 0
     """Last request time."""
 
@@ -54,10 +57,11 @@ class Rutracker:
         if self.__search_id is None:
             self.__start_search()
 
-        url = "http://rutracker.org/forum/tracker.php?search_id={search_id}&start={start}".format(
-            search_id = self.__search_id, start = page * 50)
+        if not page:
+            return self.__search_page
 
-        return self.__request(url)
+        return self.__request("http://rutracker.org/forum/tracker.php?search_id={search_id}&start={start}".format(
+            search_id = self.__search_id, start = page * 50))
 
 
     def __login(self):
@@ -109,6 +113,7 @@ class Rutracker:
                 raise Error("Unable to obtain search id")
 
             self.__search_id = match.group(1)
+            self.__search_page = page
         except Exception as e:
             raise Error("Failed to start torrent search: {0}.", e)
 
@@ -153,7 +158,7 @@ def get_new_torrents():
     if not _DEVELOP_MODE:
         client = Rutracker()
 
-    for page in xrange(0, 10):
+    for page in xrange(0, 1):
         LOG.info("Getting page %s...", page)
 
         if _DEVELOP_MODE:

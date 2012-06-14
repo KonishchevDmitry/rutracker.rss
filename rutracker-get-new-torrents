@@ -44,6 +44,9 @@ class Rutracker:
     __search_id = None
     """Active search ID."""
 
+    __search_page = None
+    """Active search page."""
+
     __last_request_time = 0
     """Last request time."""
 
@@ -54,10 +57,11 @@ class Rutracker:
         if self.__search_id is None:
             self.__start_search()
 
-        url = "http://rutracker.org/forum/tracker.php?search_id={search_id}&start={start}".format(
-            search_id = self.__search_id, start = page * 50)
+        if not page:
+            return self.__search_page
 
-        return self.__request(url)
+        return self.__request("http://rutracker.org/forum/tracker.php?search_id={search_id}&start={start}".format(
+            search_id = self.__search_id, start = page * 50))
 
 
     def __login(self):
@@ -109,6 +113,7 @@ class Rutracker:
                 raise Error("Unable to obtain search id")
 
             self.__search_id = match.group(1)
+            self.__search_page = page
         except Exception as e:
             raise Error("Failed to start torrent search: {0}.", e)
 
@@ -169,7 +174,11 @@ def get_new_torrents():
     if not _DEVELOP_MODE:
         client = Rutracker()
 
-    for page in xrange(0, 10):
+    pages_to_scan = 1
+    torrents_per_page = 50
+    total_torrents = pages_to_scan * torrents_per_page
+
+    for page in xrange(0, pages_to_scan):
         LOG.info(u"Getting page %s...", page)
 
         if _DEVELOP_MODE:
@@ -182,9 +191,8 @@ def get_new_torrents():
         # previous run.
 
         counter = 0
-        torrents_per_page = 50
 
-        for torrent_html in torrents_page.split('<tr class="tCenter hl-tr">')[1:]:
+        for page_torrent_id, torrent_html in enumerate(torrents_page.split('<tr class="tCenter hl-tr">')[1:]):
             torrent_id, torrent_name, torrent_time = torrent_regex.search(torrent_html).group(1, 2, 3)
 
             torrent_id = int(torrent_id)
@@ -199,6 +207,12 @@ def get_new_torrents():
                 torrent["name"] != torrent_name or
                 torrent["time"] != torrent_time
             ):
+                torrent_number = page * torrents_per_page + page_torrent_id + 1
+                if torrent_number >= total_torrents / 2:
+                    LOG.error(
+                        u"Got a new torrent after a half of the search (%s of %s). "
+                        u"Consider to increase search page number.", torrent_number, total_torrents)
+
                 new_data = {
                     "name":        torrent_name,
                     "time":        torrent_time,

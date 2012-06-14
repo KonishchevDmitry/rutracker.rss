@@ -57,7 +57,7 @@ def application(environ, start_response):
                 PyRSS2Gen.RSSItem(
                     title = html_parser.unescape(torrent["name"]).replace("<wbr>", ""),
                     link = rutracker.torrents.get_url(torrent["_id"]),
-                    description = torrent["description"],
+                    description = torrent.get("description", ""),
                     guid = PyRSS2Gen.Guid("{url}&time={time}".format(
                         url = rutracker.torrents.get_url(torrent["_id"]), time = torrent["time"]), isPermaLink = False),
                     pubDate = datetime.datetime.utcfromtimestamp(float(torrent["time"]))

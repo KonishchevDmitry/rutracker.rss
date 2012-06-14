@@ -65,7 +65,7 @@ class Rutracker:
 
         try:
             credentials_path = os.path.join(os.path.dirname(_SCRIPT_PATH), "credentials")
-            login, password = open(credentials_path).read().strip().split("\n")
+            login, password = ( string.strip() for string in open(credentials_path).read().strip().split("\n") )
 
             cookies = cookielib.FileCookieJar("cookies")
             opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookies))
@@ -136,25 +136,34 @@ def get_new_torrents():
         )*
     """)
 
+    def tag_regex(tag, tag_class = None, match_param = None, match_value = """([^'"]*)"""):
+        """A reqular expression that matches the specified tag."""
+
+        regex = "<" + tag + tag_attrs_regex
+
+        if tag_class is not None:
+            regex += r"""\s+class\s*=\s*['"]\s*(?:[^'" ]+\s+)*{0}(?:\s+[^'" ]+)*\s*['"]""".format(tag_class)
+            regex += tag_attrs_regex
+
+        if match_param is not None:
+            regex += ur"""\s+{0}\s*=\s*['"]{1}['"]""".format(match_param, match_value)
+            regex += tag_attrs_regex
+
+        return regex + r"\s*>"
+
     # A regular expression for a link to torrent page on http://rutracker.org/
     torrent_regex = re.compile(
-        r"<a" + tag_attrs_regex + r"""
-            \s+class=(?:
-                "([^"]+)"|
-                '([^']+)'
-            )
-        """
-            + tag_attrs_regex + r"""\s+href\s*=\s*["'][^'"]+/viewtopic\.php\?t=(\d+)["']"""
-            + tag_attrs_regex + r"\s*>(.+?)</a>"
-
-        r".+<td" + tag_attrs_regex + ur"""\s+title=['"]Добавлен['"]""" + tag_attrs_regex + r"\s*>\s*<u>(\d+)</u>"
-    , re.IGNORECASE | re.DOTALL | re.VERBOSE)
+        tag_regex("a", "tLink", "href", r"""[^'"]+/viewtopic\.php\?t=(\d+)""") + r"(.+?)</a>"
+        ".+?" +
+        tag_regex("td", match_param = "title", match_value = u"Добавлен") + r"\s*<u>\s*(\d+)\s*</u>",
+        re.IGNORECASE | re.DOTALL | re.VERBOSE)
 
     # A reqular expression that matches torrent description on its page
     torrent_description_regex = re.compile(
-        "<div" + tag_attrs_regex +
-            r"""\s+class\s*=\s*['"]post_body['"]""" +
-            tag_attrs_regex + r"\s*>(.+?)<legend>Download</legend>", re.DOTALL)
+        tag_regex("div", "post_body") +
+        "(.+?)" +
+        tag_regex("fieldset", "attach") + r"\s*" +
+            tag_regex("legend") + r"\s*Download\s*</legend>", re.IGNORECASE | re.DOTALL)
 
 
     if not _DEVELOP_MODE:
@@ -176,11 +185,7 @@ def get_new_torrents():
         torrents_per_page = 50
 
         for torrent_html in torrents_page.split('<tr class="tCenter hl-tr">')[1:]:
-            link_class, torrent_id, torrent_name, torrent_time = torrent_regex.search(torrent_html).group(1, 3, 4, 5)
-
-            link_class = link_class.split(" ")
-            if "med" not in link_class or "tLink" not in link_class:
-                continue
+            torrent_id, torrent_name, torrent_time = torrent_regex.search(torrent_html).group(1, 2, 3)
 
             torrent_id = int(torrent_id)
             if _DEVELOP_MODE:
@@ -207,8 +212,7 @@ def get_new_torrents():
                 torrent_url = rutracker.torrents.get_url(torrent_id)
 
                 try:
-                    # TODO
-                    torrent_page = open("debug/torrent.html") if False and _DEVELOP_MODE else urllib2.urlopen(torrent_url)
+                    torrent_page = open("debug/torrent.html") if _DEVELOP_MODE else urllib2.urlopen(torrent_url)
                     torrent_page = torrent_page.read().decode("cp1251")
                 except Exception as e:
                     LOG.error(u"Failed fetch torrent page %s: %s", torrent_url, e)
@@ -219,12 +223,12 @@ def get_new_torrents():
                         description = match.group(1)
 
                         description = re.sub(
-                            "<span" + tag_attrs_regex +
-                                r"""\s+class\s*=\s*['"]post-b['"]""" + tag_attrs_regex + r"\s*>(.*?)</span>",
-                            r"<b>\1</b>", description, flags = re.DOTALL)
+                            tag_regex("span", "post-b") + "(.*?)</span>",
+                            r"<b>\1</b>", description, flags = re.IGNORECASE | re.DOTALL)
 
                         description = re.sub(
-                            "(<img" + tag_attrs_regex + r"""\s+src\s*=\s*['"])\./""", r"\1http://rutracker.org/", description)
+                            tag_regex("var", "postImg", "title") + ".*?</var>",
+                            r"<div><img src='\1' /></div>", description, flags = re.IGNORECASE | re.DOTALL)
 
                         new_data["description"] = description
                     else:

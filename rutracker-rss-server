@@ -17,10 +17,10 @@ import PyRSS2Gen
 import pycl.log
 import pycl.main
 
-from pycl import constants
 from pycl.core import Error
 
 import rutracker.torrents
+from rutracker import config
 
 LOG = logging.getLogger("rutracker.rss")
 
@@ -62,7 +62,7 @@ def application(environ, start_response):
                         url = rutracker.torrents.get_url(torrent["_id"]), time = torrent["time"]), isPermaLink = False),
                     pubDate = datetime.datetime.utcfromtimestamp(float(torrent["time"]))
                 ) for torrent in rutracker.torrents.find(
-                    age = 5 * constants.DAY_SECONDS, blocklist = True, sort = True, limit = 50,
+                    age = config.MAX_FEED_AGE, blocklist = True, sort = True, limit = config.MAX_TORRENTS_IN_FEED,
                     fields = [ "_id", "description", "name", "time" ])
             ]
         ).to_xml("utf-8")

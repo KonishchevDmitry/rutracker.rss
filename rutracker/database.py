@@ -6,10 +6,10 @@ import pymongo
 def coll(name):
     """Returns the specified MongoDB collection."""
 
-    return _db()[name]
+    return db()[name]
 
 
-def _db():
+def db():
     """Returns the MongoDB database."""
 
     connection = pymongo.Connection()

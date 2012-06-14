@@ -4,7 +4,7 @@ import pymongo.errors
 
 from pycl.core import Error
 
-from rutracker.db import coll
+from rutracker.database import coll
 
 
 def add(rule, regex = False):

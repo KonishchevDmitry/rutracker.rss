@@ -51,6 +51,25 @@ class Rutracker:
     """Last request time."""
 
 
+    def request(self, url, data = None):
+        """Sends a request."""
+
+        if self.__opener is None:
+            self.__login()
+
+        max_per_second = 1
+        min_difference = 1.0 / max_per_second
+        if time.time() - self.__last_request_time < min_difference:
+            time.sleep(self.__last_request_time + min_difference - time.time())
+
+        try:
+            return self.__opener.open(url, data).read().decode("cp1251")
+        except Exception as e:
+            raise Error("Unable to fetch page {0}: {1}.", url, e)
+        finally:
+            self.__last_request_time = time.time()
+
+
     def search(self, page):
         """Returns the specified torrent search page."""
 
@@ -60,7 +79,7 @@ class Rutracker:
         if not page:
             return self.__search_page
 
-        return self.__request("http://rutracker.org/forum/tracker.php?search_id={search_id}&start={start}".format(
+        return self.request("http://rutracker.org/forum/tracker.php?search_id={search_id}&start={start}".format(
             search_id = self.__search_id, start = page * 50))
 
 
@@ -82,25 +101,6 @@ class Rutracker:
             raise Error("Unable to login to rutracker.org: {0}.", e)
 
 
-    def __request(self, url, data = None):
-        """Sends a request."""
-
-        if self.__opener is None:
-            self.__login()
-
-        max_per_second = 1
-        min_difference = 1.0 / max_per_second
-        if time.time() - self.__last_request_time < min_difference:
-            time.sleep(self.__last_request_time + min_difference - time.time())
-
-        try:
-            return self.__opener.open(url, data).read().decode("cp1251")
-        except Exception as e:
-            raise Error("Unable to fetch page {0}: {1}.", url, e)
-        finally:
-            self.__last_request_time = time.time()
-
-
     def __start_search(self):
         """Starts torrent search."""
 
@@ -109,7 +109,7 @@ class Rutracker:
             for forum_id in (46, 56, 98, 103, 249, 314, 500, 552, 709, 1260, 2076, 2123, 2139):
                 data += "&f%5B%5D={}".format(forum_id)
 
-            page = self.__request("http://rutracker.org/forum/tracker.php", data)
+            page = self.request("http://rutracker.org/forum/tracker.php", data)
 
             match = re.search(r'<a class="pg" href="tracker.php\?search_id=([^&]+)', page)
             if match is None:
@@ -168,11 +168,8 @@ def get_new_torrents():
 
     # A reqular expression that matches torrent description on its page
     torrent_description_regex = re.compile(
-        tag_regex("div", "post_body") +
-        "(.+?)" +
-        tag_regex("fieldset", "attach") + r"\s*" +
-            tag_regex("legend") + r"\s*Download\s*</legend>", re.IGNORECASE | re.DOTALL)
-
+        tag_regex("div", "post_body") + "(.+?)" + 
+        tag_regex("div", match_param = "id", match_value = "tor-reged"), re.IGNORECASE | re.DOTALL)
 
     if not _DEVELOP_MODE:
         client = Rutracker()
@@ -225,8 +222,7 @@ def get_new_torrents():
                 torrent_url = rutracker.torrents.get_url(torrent_id)
 
                 try:
-                    torrent_page = open("debug/torrent.html") if _DEVELOP_MODE else urllib2.urlopen(torrent_url)
-                    torrent_page = torrent_page.read().decode("cp1251")
+                    torrent_page = open("debug/torrent.html").read().decode("cp1251") if _DEVELOP_MODE else client.request(torrent_url)
                 except Exception as e:
                     LOG.error(u"Failed fetch torrent page %s: %s", torrent_url, e)
                 else:
@@ -242,6 +238,9 @@ def get_new_torrents():
                         description = re.sub(
                             tag_regex("var", "postImg", "title") + ".*?</var>",
                             r"<div><img src='\1' /></div>", description, flags = re.IGNORECASE | re.DOTALL)
+
+                        description = re.sub(
+                            tag_regex("script") + ".*?</script>", "", description, flags = re.IGNORECASE | re.DOTALL)
 
                         new_data["description"] = description
                     else:

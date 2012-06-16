@@ -69,7 +69,7 @@ class Rutracker:
 
         try:
             credentials_path = os.path.join(os.path.dirname(_SCRIPT_PATH), "credentials")
-            login, password = open(credentials_path).read().strip().split("\n")
+            login, password = ( string.strip() for string in open(credentials_path).read().strip().split("\n") )
 
             cookies = cookielib.FileCookieJar("cookies")
             opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookies))
@@ -125,7 +125,7 @@ class Rutracker:
 def get_new_torrents():
     """Gets new torrents info."""
 
-    LOG.info("Search for new torrents...")
+    LOG.info(u"Search for new torrents...")
 
     # A regular expression for attribute name
     attribute_name_regex = "[a-zA-Z][-.a-zA-Z0-9:_]*"
@@ -144,25 +144,45 @@ def get_new_torrents():
         )*
     """)
 
-    # A regular expression for a link to torrent page on http://rutracker.org
-    torrent_regex = re.compile(
-        r"<a" + tag_attrs_regex + r"""
-            \s+class=(?:
-                "([^"]+)"|
-                '([^']+)'
-            )
-        """
-            + tag_attrs_regex + r"""\s+href\s*=\s*["'][^'"]+/viewtopic\.php\?t=(\d+)["']"""
-            + tag_attrs_regex + r"\s*>(.+?)</a>"
+    def tag_regex(tag, tag_class = None, match_param = None, match_value = """([^'"]*)"""):
+        """A reqular expression that matches the specified tag."""
 
-        r".+<td" + tag_attrs_regex + ur"""\s+title=['"]Добавлен['"]""" + tag_attrs_regex + r"\s*>\s*<u>(\d+)</u>"
-    , re.IGNORECASE | re.DOTALL | re.VERBOSE)
+        regex = "<" + tag + tag_attrs_regex
+
+        if tag_class is not None:
+            regex += r"""\s+class\s*=\s*['"]\s*(?:[^'" ]+\s+)*{0}(?:\s+[^'" ]+)*\s*['"]""".format(tag_class)
+            regex += tag_attrs_regex
+
+        if match_param is not None:
+            regex += ur"""\s+{0}\s*=\s*['"]{1}['"]""".format(match_param, match_value)
+            regex += tag_attrs_regex
+
+        return regex + r"\s*>"
+
+    # A regular expression for a link to torrent page on http://rutracker.org/
+    torrent_regex = re.compile(
+        tag_regex("a", "tLink", "href", r"""[^'"]+/viewtopic\.php\?t=(\d+)""") + r"(.+?)</a>"
+        ".+?" +
+        tag_regex("td", match_param = "title", match_value = u"Добавлен") + r"\s*<u>\s*(\d+)\s*</u>",
+        re.IGNORECASE | re.DOTALL | re.VERBOSE)
+
+    # A reqular expression that matches torrent description on its page
+    torrent_description_regex = re.compile(
+        tag_regex("div", "post_body") +
+        "(.+?)" +
+        tag_regex("fieldset", "attach") + r"\s*" +
+            tag_regex("legend") + r"\s*Download\s*</legend>", re.IGNORECASE | re.DOTALL)
+
 
     if not _DEVELOP_MODE:
         client = Rutracker()
 
-    for page in xrange(0, 1):
-        LOG.info("Getting page %s...", page)
+    pages_to_scan = 1
+    torrents_per_page = 50
+    total_torrents = pages_to_scan * torrents_per_page
+
+    for page in xrange(0, pages_to_scan):
+        LOG.info(u"Getting page %s...", page)
 
         if _DEVELOP_MODE:
             torrents_page = open("./debug/{0}.html".format(page + 1)).read().decode("cp1251")
@@ -174,14 +194,10 @@ def get_new_torrents():
         # previous run.
 
         counter = 0
-        torrents_per_page = 50
 
-        for torrent_html in torrents_page.split('<tr class="tCenter hl-tr">')[1:]:
-            link_class, torrent_id, torrent_name, torrent_time = torrent_regex.search(torrent_html).group(1, 3, 4, 5)
-
-            link_class = link_class.split(" ")
-            if "med" not in link_class or "tLink" not in link_class:
-                continue
+        for page_torrent_id, torrent_html in enumerate(torrents_page.split('<tr class="tCenter hl-tr">')[1:]):
+            torrent_number = page * torrents_per_page + page_torrent_id + 1
+            torrent_id, torrent_name, torrent_time = torrent_regex.search(torrent_html).group(1, 2, 3)
 
             torrent_id = int(torrent_id)
             if _DEVELOP_MODE:
@@ -189,23 +205,50 @@ def get_new_torrents():
             torrent_time = int(torrent_time)
 
             torrent = rutracker.torrents.find_one(torrent_id)
+            is_new = ( torrent is None or torrent["time"] != torrent_time )
 
-            if (
-                torrent is None or
-                torrent["name"] != torrent_name or
-                torrent["time"] != torrent_time
-            ):
+            if is_new and torrent_number >= total_torrents / 2:
+                LOG.error(
+                    u"Got a new torrent after a half of the search (%s of %s). "
+                    u"Consider to increase search page number.", torrent_number, total_torrents)
+
+            if is_new or torrent["name"] != torrent_name:
                 new_data = {
                     "name":        torrent_name,
                     "time":        torrent_time,
                     "fingerprint": rutracker.torrents.get_fingerprint(torrent_name),
-                    "description": "",
                 }
-
-                rutracker.torrents.update(torrent_id, new_data, upsert = True)
 
                 LOG.info(u"New torrent #%s:%s [%s]: %s",
                     torrent_id, new_data["time"], new_data["fingerprint"], new_data["name"])
+
+                torrent_url = rutracker.torrents.get_url(torrent_id)
+
+                try:
+                    torrent_page = open("debug/torrent.html") if _DEVELOP_MODE else urllib2.urlopen(torrent_url)
+                    torrent_page = torrent_page.read().decode("cp1251")
+                except Exception as e:
+                    LOG.error(u"Failed fetch torrent page %s: %s", torrent_url, e)
+                else:
+                    match = torrent_description_regex.search(torrent_page)
+
+                    if match:
+                        description = match.group(1)
+
+                        description = re.sub(
+                            tag_regex("span", "post-b") + "(.*?)</span>",
+                            r"<b>\1</b>", description, flags = re.IGNORECASE | re.DOTALL)
+
+                        description = re.sub(
+                            tag_regex("var", "postImg", "title") + ".*?</var>",
+                            r"<div><img src='\1' /></div>", description, flags = re.IGNORECASE | re.DOTALL)
+
+                        new_data["description"] = description
+                    else:
+                        LOG.error(u"Unable to get description for torrent %s.", torrent_url)
+
+                    rutracker.torrents.update(torrent_id, new_data, upsert = True)
+
             else:
                 LOG.debug(u"Torrent #%s:%s [%s]: %s",
                     torrent_id, torrent["time"], torrent["fingerprint"], torrent["name"])
@@ -213,7 +256,7 @@ def get_new_torrents():
             counter += 1
 
         if counter != torrents_per_page:
-            LOG.error("Error while parsing page %s: got %s torrents instead of %s",
+            LOG.error(u"Error while parsing page %s: got %s torrents instead of %s",
                 page, counter, torrents_per_page)
 
 

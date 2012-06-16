@@ -10,7 +10,24 @@ from HTMLParser import HTMLParser
 import pymongo
 
 import rutracker.blacklist
-from rutracker.db import coll
+
+from rutracker import config
+from rutracker.database import coll, db
+
+
+def compact():
+    """Compacts the database by removing data that is not already needed."""
+
+    coll("torrents").remove({
+        "time": { "$lt": int(time.time()) - config.MAX_TORRENT_AGE } }, safe = True)
+
+    coll("torrents").update({
+        "time": { "$lt": int(time.time()) - config.MAX_FEED_AGE }
+    },{
+        "$unset": { "description": True }
+    }, multi = True, safe = True)
+
+    db().command("compact", "torrents")
 
 
 def find(age = None, blocklist = False, sort = False, limit = None, fields = None):
@@ -132,6 +149,12 @@ def get_stats(blacklist = False):
     torrents.sort(key = lambda a: a["count"], reverse = True)
 
     return torrents
+
+
+def get_url(torrent_id):
+    """Returns torrent URL."""
+
+    return "http://rutracker.org/forum/viewtopic.php?t={id}".format(id = torrent_id)
 
 
 def init():

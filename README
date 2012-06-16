@@ -4,4 +4,4 @@ Tries to determine TV show name from torrent title and allows to create rules
 to filter out torrents that you are not interested in.
 
 This project is not intended to go public. It's just a set of scripts for
-personal usage that are currently in development state.
+personal usage.

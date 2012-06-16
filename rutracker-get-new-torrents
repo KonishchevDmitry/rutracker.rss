@@ -105,8 +105,11 @@ class Rutracker:
         """Starts torrent search."""
 
         try:
-            page = self.__request("http://rutracker.org/forum/tracker.php",
-                data = "prev_my=0&prev_new=0&prev_oop=0&f%5B%5D=709&f%5B%5D=46&f%5B%5D=2076&f%5B%5D=98&f%5B%5D=56&f%5B%5D=2123&f%5B%5D=249&f%5B%5D=552&f%5B%5D=500&f%5B%5D=1260&f%5B%5D=2139&o=1&s=2&tm=-1&pn=&nm=&submit=%CF%EE%E8%F1%EA")
+            data = "prev_my=0&prev_new=0&prev_oop=0&o=1&s=2&tm=-1&pn=&nm=&submit=%CF%EE%E8%F1%EA"
+            for forum_id in (46, 56, 98, 103, 249, 314, 500, 552, 709, 1260, 2076, 2123, 2139):
+                data += "&f%5B%5D={}".format(forum_id)
+
+            page = self.__request("http://rutracker.org/forum/tracker.php", data)
 
             match = re.search(r'<a class="pg" href="tracker.php\?search_id=([^&]+)', page)
             if match is None:

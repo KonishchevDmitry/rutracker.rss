@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+
+"""Generates a torrent fingerprint."""
+
+import sys
+
+import pycl.main
+from pycl.misc import to_unicode
+
+import rutracker.torrents
+
+
+def main():
+    """The script's main function."""
+
+    pycl.main.set_environment()
+
+    if len(sys.argv) != 2:
+        sys.exit(u"Usage: {cmd} torrent_name".format(cmd = to_unicode(sys.argv[0])))
+
+    print rutracker.torrents.get_fingerprint(to_unicode(sys.argv[1]))
+
+
+if __name__ == "__main__":
+    main()

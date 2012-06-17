@@ -33,5 +33,11 @@ class TestFingerprint(unittest.TestCase):
         self.assertEquals(u"среда обитания", get_fingerprint(
             u"Среда обитания - Мастера вызывали? (Екатерина Абдулова) [2012, Документальн<wbr>ый, DVB]"))
 
+        self.assertEquals(u"тайны века", get_fingerprint(
+            u"Тайны Века (Александр Мень. Завтра меня убьют, Кто утопил &quot;Эстонию<wbr>&quot;, Волынов. Падение из космоса, Рихард Зорге, которого мы не знали)[2003-2007 г., Документальн<wbr>ый]"))
+
+        self.assertEquals(u"совершенно секретно", get_fingerprint(
+            u"«Совершенно секретно». «Железный Лев». Рохлин (Александр Коридзе) [2008, IPTVRip]"))
+
 if __name__ == '__main__':
     unittest.main()

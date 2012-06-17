@@ -72,8 +72,8 @@ def get_fingerprint(torrent_name):
 
     # Drop any additional info: timestamps, release versions, etc.
     # -->
-    square_braces_regex = re.compile(r"^(.+)\s+\[[^\[\]]+?\](.*)$")
-    round_braces_regex = re.compile(r"^(.+)\s+\([^()]+?\)(.*)$")
+    square_braces_regex = re.compile(r"^(.+(?:\s+|\)))\[[^\[\]]+?\](.*)$")
+    round_braces_regex = re.compile(r"^(.+(?:\s+|\]))\([^()]+?\)(.*)$")
     angle_braces_regex = re.compile(r"^(.+)\s+<<.*?>>(.*)$")
     date_regex = re.compile(ur"^(.+)\s+(?:\d{1,2}\.\d{1,2}\.\d{4}|\d{4}\.\d{2}\.\d{2})(.*)$")
     # Unable to merge it into date_regex due to some strange behaviour of re
@@ -121,9 +121,16 @@ def get_fingerprint(torrent_name):
         torrent_name = torrent_name.replace(month, "")
     # <--
 
-    # Try to get most possible short fingerprint
+    # Try to get most possible short fingerprint -->
+    torrent_name = re.sub(
+        ur"^«([^»]{6,})»", r"\1", torrent_name)
+
+    torrent_name = re.sub(
+        ur'^"([^»]{6,})"', r"\1", torrent_name)
+
     torrent_name = re.sub(
         ur"^([0-9a-zабвгдеёжзийклмнопрстуфхцчшщьъыэюя., \-:]{6,}?(?:[:.?!]| - | — |\|)).*", r"\1", torrent_name)
+    # Try to get most possible short fingerprint <--
 
     # Drop all punctuation and other non-alphabet characters
     characters = u"abcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщьъыэюя"

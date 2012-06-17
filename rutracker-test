@@ -1,0 +1,37 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import unittest
+
+from rutracker.torrents import get_fingerprint
+
+class TestFingerprint(unittest.TestCase):
+    """Tests torrent fingerprint function."""
+
+    def test_fingerprint(self):
+        self.assertEquals(u"ночь интеллект", get_fingerprint(
+            u"Ночь. Интеллект. Профессор Черниговская<wbr>: Мифологическ<wbr>ое мышление. В гостях Светлана Адоньева (2009.10.16)<wbr> SATRip"))
+
+        self.assertEquals(u"история науки", get_fingerprint(
+            u"История науки - Можем ли мы обладать неограниченн<wbr>ой энергией? / BBC. The Story of Science - Can We Have Unlimited Power ? (Michael J. Mosley) [2010, Документальн<wbr>ый сериал, DVB]"))
+
+        self.assertEquals(u"контрольная закупка", get_fingerprint(
+            u"Контрольная закупка - Салями Венская (эфир от 2012.02.21) [2012, Реалити-шоу,<wbr> SATRip]"))
+
+        self.assertEquals(u"познавательные истории", get_fingerprint(
+            u"Познавательн<wbr>ые истории (15 передач) [научно-попул<wbr>ярный фильм / Da Vinci Learning, SATRip]"))
+
+        self.assertEquals(u"мой эрмитаж", get_fingerprint(
+            u" Мой Эрмитаж (31 выпуск) &lt;&lt; Знаменитый Ломоносовски<wbr>й (Императорск<wbr>ий) фарфоровый завод &gt;&gt; (эфир 29.05.2012) (Лев Цуцульковски<wbr>й) [2009-2012 г., Документальн<wbr>ый цикл, познавательн<wbr>ый, SATRip / DVB]"))
+
+        self.assertEquals(u"специальный проект", get_fingerprint(
+            u"Специальный проект: Титаник. Репортаж с того света (Часть 2) [2012, Документальн<wbr>ый, SATRip]"))
+
+        self.assertEquals(u"собчак живьём", get_fingerprint(
+            u"Собчак живьём. Разговор с Эдуардом Лимоновым (Эфир от 17.05.2012) [2012, Интервью, SATRip]"))
+
+        self.assertEquals(u"среда обитания", get_fingerprint(
+            u"Среда обитания - Мастера вызывали? (Екатерина Абдулова) [2012, Документальн<wbr>ый, DVB]"))
+
+if __name__ == '__main__':
+    unittest.main()

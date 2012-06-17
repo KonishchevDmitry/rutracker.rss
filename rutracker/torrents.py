@@ -79,6 +79,7 @@ def get_fingerprint(torrent_name):
     # Unable to merge it into date_regex due to some strange behaviour of re
     # module.
     additional_date_regex = re.compile(ur"^(.+)\s+по\s+(?:\d{1,2}\.\d{1,2}\.\d{4}|\d{4}\.\d{2}\.\d{2})(.*)$")
+    release_counter_regex = re.compile(ur"^(.+)\s+\d+\s*(?:в|из)\s*\d+(.*)$")
 
     old_torrent_name = None
     while torrent_name != old_torrent_name:
@@ -90,6 +91,7 @@ def get_fingerprint(torrent_name):
             square_braces_regex,
             round_braces_regex,
             angle_braces_regex,
+            release_counter_regex,
         ):
             torrent_name = regex.sub(r"\1\2", torrent_name.strip(" .,"))
 

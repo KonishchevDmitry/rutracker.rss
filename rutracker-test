@@ -39,5 +39,11 @@ class TestFingerprint(unittest.TestCase):
         self.assertEquals(u"совершенно секретно", get_fingerprint(
             u"«Совершенно секретно». «Железный Лев». Рохлин (Александр Коридзе) [2008, IPTVRip]"))
 
+        self.assertEquals(u"national geografic", get_fingerprint(
+            u"National Geografic 20 в 1 / National Geografic 20 in 1 [DVDRip]"))
+
+        self.assertEquals(u"national geografic", get_fingerprint(
+            u"National Geografic 20в1 / National Geografic 20 in 1 [DVDRip]"))
+
 if __name__ == '__main__':
     unittest.main()

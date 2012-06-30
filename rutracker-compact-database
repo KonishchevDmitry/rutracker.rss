@@ -2,9 +2,11 @@
 
 """Compacts the database to save the disk space."""
 
+import pycl.main
+pycl.main.set_environment()
+
 import sys
 
-import pycl.main
 from pycl.misc import to_unicode
 
 import rutracker.torrents
@@ -12,8 +14,6 @@ import rutracker.torrents
 
 def main():
     """The script's main function."""
-
-    pycl.main.set_environment()
 
     if len(sys.argv) != 1:
         sys.exit(u"Invalid argument: {arg}\nUsage: {command}".format(

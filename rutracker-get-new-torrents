@@ -6,6 +6,9 @@ Receives new torrents info from http://rutracker.org/ and stores them into the
 database.
 """
 
+import pycl.main
+pycl.main.set_environment()
+
 import cookielib
 import getopt
 import logging
@@ -18,7 +21,6 @@ import urllib2
 
 import pycl.daemon
 import pycl.log
-import pycl.main
 import pycl.misc
 
 from pycl.core import Error, LogicalError
@@ -261,8 +263,6 @@ def get_new_torrents():
 
 def main():
     """The script's main function."""
-
-    pycl.main.set_environment()
 
     # Parsing command line arguments -->
     cron_mode = False

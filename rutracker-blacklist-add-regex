@@ -2,9 +2,11 @@
 
 """Adds a blacklist regex rule."""
 
+import pycl.main
+pycl.main.set_environment()
+
 import sys
 
-import pycl.main
 from pycl.core import Error
 from pycl.misc import to_unicode
 
@@ -13,8 +15,6 @@ from rutracker import blacklist
 
 def main():
     """The script's main function."""
-
-    pycl.main.set_environment()
 
     if len(sys.argv) != 2:
         sys.exit(u"Usage: {cmd} rule".format(cmd = to_unicode(sys.argv[0])))

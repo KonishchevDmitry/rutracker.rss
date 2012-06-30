@@ -2,6 +2,9 @@
 
 """RuTracker.org RSS server."""
 
+import pycl.main
+pycl.main.set_environment()
+
 import datetime
 import logging
 import os
@@ -15,7 +18,6 @@ sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import PyRSS2Gen
 
 import pycl.log
-import pycl.main
 
 from pycl.core import Error
 
@@ -87,7 +89,6 @@ def serve(host, port):
     server.serve_forever()
 
 
-pycl.main.set_environment()
 pycl.log.setup()
 
 if __name__ == "__main__":

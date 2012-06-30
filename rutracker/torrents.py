@@ -155,7 +155,7 @@ def get_stats(blacklist = False):
         [ "fingerprint" ], query, { "count": 0 }, """
         function(obj, aggregated) {
             aggregated.name = obj.name;
-            aggregated.count++;
+            aggregated.count += obj.revision;
         }"""
     )
     torrents.sort(key = lambda a: a["count"], reverse = True)
@@ -175,10 +175,15 @@ def init():
     coll("torrents").ensure_index([( "time", pymongo.DESCENDING )])
 
 
-def update(torrent_id, data, upsert = False):
+def update(torrent_id, data, changed = False, upsert = False):
     """Updates the specified torrent."""
 
-    return coll("torrents").update({ "_id": torrent_id }, { "$set": data },
+    update = { "$set": data }
+
+    if changed:
+        update["$inc"] = { "revision": 1 }
+
+    return coll("torrents").update({ "_id": torrent_id }, update,
         upsert = upsert, safe = True)["updatedExisting"]
 
 

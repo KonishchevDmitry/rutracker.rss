@@ -248,7 +248,7 @@ def get_new_torrents():
                     else:
                         LOG.error(u"Unable to get description for torrent %s.", torrent_url)
 
-                    rutracker.torrents.update(torrent_id, new_data, upsert = True)
+                    rutracker.torrents.update(torrent_id, new_data, changed = is_new, upsert = True)
 
             else:
                 LOG.debug(u"Torrent #%s:%s [%s]: %s",

@@ -158,6 +158,10 @@ def get_stats(blacklist = False):
             aggregated.count += obj.revision;
         }"""
     )
+
+    for torrent in torrents:
+        torrent["count"] = int(torrent["count"])
+
     torrents.sort(key = lambda a: a["count"], reverse = True)
 
     return torrents

@@ -73,6 +73,7 @@ def get_fingerprint(torrent_name):
     # Drop any additional info: timestamps, release versions, etc.
     # -->
     square_braces_regex = re.compile(r"^(.+(?:\s+|\)))\[[^\[\]]+?\](.*)$")
+    preceding_square_braces_regex = re.compile(r"^(\s*)\[[^\[\]]+?\](.+)$")
     round_braces_regex = re.compile(r"^(.+(?:\s+|\]))\([^()]+?\)(.*)$")
     angle_braces_regex = re.compile(r"^(.+)\s+<<.*?>>(.*)$")
     date_regex = re.compile(ur"^(.+)\s+(?:\d{1,2}\.\d{1,2}\.\d{4}|\d{4}\.\d{2}\.\d{2})(.*)$")
@@ -88,6 +89,7 @@ def get_fingerprint(torrent_name):
         for regex in (
             additional_date_regex,
             date_regex,
+            preceding_square_braces_regex,
             square_braces_regex,
             round_braces_regex,
             angle_braces_regex,

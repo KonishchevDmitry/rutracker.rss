@@ -45,5 +45,8 @@ class TestFingerprint(unittest.TestCase):
         self.assertEquals(u"national geografic", get_fingerprint(
             u"National Geografic 20в1 / National Geografic 20 in 1 [DVDRip]"))
 
+        self.assertEquals(u"пенн и теллер", get_fingerprint(
+            u"[изменено 7.07, добавлена 2x01] Пенн и Теллер: Херня! / Penn&Teller: Bullshit! [2003-2010, Научно-популярная передача, SATRip, 15 серий из 89]"))
+
 if __name__ == '__main__':
     unittest.main()

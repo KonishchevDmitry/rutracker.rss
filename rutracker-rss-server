@@ -2,18 +2,18 @@
 
 """RuTracker.org RSS server."""
 
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import pycl.main
 pycl.main.set_environment()
 
 import datetime
 import logging
-import os
-import sys
 
 from HTMLParser import HTMLParser
 from wsgiref.simple_server import make_server
-
-sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 
 import PyRSS2Gen
 

@@ -72,14 +72,15 @@ def get_fingerprint(torrent_name):
 
     # Drop any additional info: timestamps, release versions, etc.
     # -->
-    torrent_name = re.sub(r"\s+/.*", "", torrent_name)
-
-    square_braces_regex = re.compile(r"^(.+)\s+\[[^\[\]]+?\](.*)")
-    round_braces_regex = re.compile(r"^(.+)\s+\([^()]+?\)(.*)")
-    date_regex = re.compile(ur"^(.+)\s+(?:\d{1,2}\.\d{1,2}\.\d{4}|\d{4}\.\d{2}\.\d{2})(.*)")
+    square_braces_regex = re.compile(r"^(.+(?:\s+|\)))\[[^\[\]]+?\](.*)$")
+    preceding_square_braces_regex = re.compile(r"^(\s*)\[[^\[\]]+?\](.+)$")
+    round_braces_regex = re.compile(r"^(.+(?:\s+|\]))\([^()]+?\)(.*)$")
+    angle_braces_regex = re.compile(r"^(.+)\s+<<.*?>>(.*)$")
+    date_regex = re.compile(ur"^(.+)\s+(?:\d{1,2}\.\d{1,2}\.\d{4}|\d{4}\.\d{2}\.\d{2})(.*)$")
     # Unable to merge it into date_regex due to some strange behaviour of re
     # module.
-    additional_date_regex = re.compile(ur"^(.+)\s+по\s+(?:\d{1,2}\.\d{1,2}\.\d{4}|\d{4}\.\d{2}\.\d{2})(.*)")
+    additional_date_regex = re.compile(ur"^(.+)\s+по\s+(?:\d{1,2}\.\d{1,2}\.\d{4}|\d{4}\.\d{2}\.\d{2})(.*)$")
+    release_counter_regex = re.compile(ur"^(.+)\s+\d+\s*(?:в|из)\s*\d+(.*)$")
 
     old_torrent_name = None
     while torrent_name != old_torrent_name:
@@ -88,10 +89,15 @@ def get_fingerprint(torrent_name):
         for regex in (
             additional_date_regex,
             date_regex,
+            preceding_square_braces_regex,
             square_braces_regex,
             round_braces_regex,
+            angle_braces_regex,
+            release_counter_regex,
         ):
             torrent_name = regex.sub(r"\1\2", torrent_name.strip(" .,"))
+
+    torrent_name = re.sub(r"\s+/.*", "", torrent_name)
     # <--
 
     # We need all names in lowercase for easier analysis
@@ -119,8 +125,16 @@ def get_fingerprint(torrent_name):
         torrent_name = torrent_name.replace(month, "")
     # <--
 
-    # Try to get most possible short fingerprint
-    torrent_name = re.sub(ur"^([0-9a-zа-я, \-:]{6,}(?:[:.?]| - | — |\|)).*", r"\1", torrent_name)
+    # Try to get most possible short fingerprint -->
+    torrent_name = re.sub(
+        ur"^«([^»]{6,})»", r"\1", torrent_name)
+
+    torrent_name = re.sub(
+        ur'^"([^»]{6,})"', r"\1", torrent_name)
+
+    torrent_name = re.sub(
+        ur"^([0-9a-zабвгдеёжзийклмнопрстуфхцчшщьъыэюя., \-:]{6,}?(?:[:.?!]| - | — |\|)).*", r"\1", torrent_name)
+    # Try to get most possible short fingerprint <--
 
     # Drop all punctuation and other non-alphabet characters
     characters = u"abcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщьъыэюя"
@@ -143,9 +157,13 @@ def get_stats(blacklist = False):
         [ "fingerprint" ], query, { "count": 0 }, """
         function(obj, aggregated) {
             aggregated.name = obj.name;
-            aggregated.count++;
+            aggregated.count += obj.revision;
         }"""
     )
+
+    for torrent in torrents:
+        torrent["count"] = int(torrent["count"])
+
     torrents.sort(key = lambda a: a["count"], reverse = True)
 
     return torrents
@@ -163,10 +181,15 @@ def init():
     coll("torrents").ensure_index([( "time", pymongo.DESCENDING )])
 
 
-def update(torrent_id, data, upsert = False):
+def update(torrent_id, data, changed = False, upsert = False):
     """Updates the specified torrent."""
 
-    return coll("torrents").update({ "_id": torrent_id }, { "$set": data },
+    update = { "$set": data }
+
+    if changed:
+        update["$inc"] = { "revision": 1 }
+
+    return coll("torrents").update({ "_id": torrent_id }, update,
         upsert = upsert, safe = True)["updatedExisting"]
 
 

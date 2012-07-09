@@ -245,7 +245,12 @@ def get_new_torrents():
 
                         new_data["description"] = description
                     else:
-                        LOG.error(u"Unable to get description for torrent %s.", torrent_url)
+                        match = re.search(
+                            tag_regex("table", "forumline message") + "(.*?)</table>",
+                            torrents_page, flags = re.IGNORECASE | re.DOTALL)
+
+                        (LOG.warning if match and u"Раздача ожидает проверки модератором" in match.group(1) else LOG.error)(
+                            u"Unable to get description for torrent %s.", torrent_url)
 
                     rutracker.torrents.update(torrent_id, new_data, upsert = True)
 

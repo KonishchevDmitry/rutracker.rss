@@ -37,6 +37,13 @@ _SCRIPT_PATH = os.path.realpath(__file__)
 """Full path to this script."""
 
 
+class OnMaintenanceError(Error):
+    """Raised when the site is on maintenance."""
+
+    def __init__(self):
+        Error.__init__(self, "The site is on maintenance.")
+
+
 class Rutracker:
     """Fetches pages from http://rutracker.org/."""
 
@@ -113,12 +120,20 @@ class Rutracker:
 
             page = self.request("http://rutracker.org/forum/tracker.php", data)
 
-            match = re.search(r'<a class="pg" href="tracker.php\?search_id=([^&]+)', page)
+            match = re.search(
+                tag_regex("a", "pg", "href", r"tracker.php\?search_id=([^&]+)[^'\"]*?"),
+                page, flags = re.IGNORECASE)
+
             if match is None:
-                raise Error("Unable to obtain search id")
+                if re.search(tag_regex("p") + u"форум временно отключен</p>", page, flags = re.IGNORECASE):
+                    raise OnMaintenanceError()
+                else:
+                    raise Error("Unable to obtain search ID")
 
             self.__search_id = match.group(1)
             self.__search_page = page
+        except OnMaintenanceError:
+            raise
         except Exception as e:
             raise Error("Failed to start torrent search: {0}.", e)
 
@@ -129,38 +144,6 @@ def get_new_torrents():
 
     LOG.info(u"Search for new torrents...")
 
-    # A regular expression for attribute name
-    attribute_name_regex = "[a-zA-Z][-.a-zA-Z0-9:_]*"
-
-    # A regular expression for tag attributes
-    tag_attrs_regex = re.sub(r"\s*", "", r"""
-        (?:\s+
-          """ + attribute_name_regex + r"""
-          (?:\s*=\s*
-            (?:
-              '[^']*'
-              |"[^"]*"
-              |[^'"/>\s]+
-            )
-          )?
-        )*
-    """)
-
-    def tag_regex(tag, tag_class = None, match_param = None, match_value = """([^'"]*)"""):
-        """A reqular expression that matches the specified tag."""
-
-        regex = "<" + tag + tag_attrs_regex
-
-        if tag_class is not None:
-            regex += r"""\s+class\s*=\s*['"]\s*(?:[^'" ]+\s+)*{0}(?:\s+[^'" ]+)*\s*['"]""".format(tag_class)
-            regex += tag_attrs_regex
-
-        if match_param is not None:
-            regex += ur"""\s+{0}\s*=\s*['"]{1}['"]""".format(match_param, match_value)
-            regex += tag_attrs_regex
-
-        return regex + r"\s*>"
-
     # A regular expression for a link to torrent page on http://rutracker.org/
     torrent_regex = re.compile(
         tag_regex("a", "tLink", "href", r"""[^'"]+/viewtopic\.php\?t=(\d+)""") + r"(.+?)</a>"
@@ -170,7 +153,7 @@ def get_new_torrents():
 
     # A reqular expression that matches torrent description on its page
     torrent_description_regex = re.compile(
-        tag_regex("div", "post_body") + "(.+?)" + 
+        tag_regex("div", "post_body") + "(.+?)" +
         tag_regex("div", match_param = "id", match_value = "tor-reged"), re.IGNORECASE | re.DOTALL)
 
     if not _DEVELOP_MODE:
@@ -311,10 +294,44 @@ def main():
     else:
         try:
             get_new_torrents()
+        except OnMaintenanceError:
+            LOG.warning("The Rutracker.org is on maintenance now.")
         finally:
             pycl.misc.syscall_wrapper(os.close, pid_file_fd)
             pycl.misc.syscall_wrapper(os.unlink, to_system_encoding(pid_file))
 
+
+def tag_regex(tag, tag_class = None, match_param = None, match_value = """([^'"]*)"""):
+    """A reqular expression that matches the specified tag."""
+
+    # A regular expression for attribute name
+    attribute_name_regex = "[a-zA-Z][-.a-zA-Z0-9:_]*"
+
+    # A regular expression for tag attributes
+    tag_attrs_regex = re.sub(r"\s*", "", r"""
+        (?:\s+
+          """ + attribute_name_regex + r"""
+          (?:\s*=\s*
+            (?:
+              '[^']*'
+              |"[^"]*"
+              |[^'"/>\s]+
+            )
+          )?
+        )*
+    """)
+
+    regex = "<" + tag + tag_attrs_regex
+
+    if tag_class is not None:
+        regex += r"""\s+class\s*=\s*['"]\s*(?:[^'" ]+\s+)*{0}(?:\s+[^'" ]+)*\s*['"]""".format(tag_class)
+        regex += tag_attrs_regex
+
+    if match_param is not None:
+        regex += ur"""\s+{0}\s*=\s*['"]{1}['"]""".format(match_param, match_value)
+        regex += tag_attrs_regex
+
+    return regex + r"\s*>"
 
 if __name__ == "__main__":
     main()

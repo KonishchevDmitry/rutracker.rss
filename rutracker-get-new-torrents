@@ -231,7 +231,7 @@ def get_new_torrents():
                     else:
                         match = re.search(
                             tag_regex("table", "forumline message") + "(.*?)</table>",
-                            torrents_page, flags = re.IGNORECASE | re.DOTALL)
+                            torrent_page, flags = re.IGNORECASE | re.DOTALL)
 
                         (LOG.warning if match and match.group(1).find(u"Раздача ожидает проверки модератором") != -1 else LOG.error)(
                             u"Unable to get description for torrent %s.", torrent_url)

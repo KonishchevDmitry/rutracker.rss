@@ -20,7 +20,7 @@ def main():
         sys.exit(u"Invalid argument: {arg}\nUsage: {command}".format(
             arg = to_unicode(sys.argv[1]), command = to_unicode(sys.argv[0])))
 
-    torrents = rutracker.torrents.get_stats(blacklist = True)[:50]
+    torrents = rutracker.torrents.get_stats(blacklist = True)[:25]
 
     if torrents:
         table = TextTable()

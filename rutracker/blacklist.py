@@ -1,5 +1,7 @@
 """Provides functions for managing torrent blacklist."""
 
+from __future__ import unicode_literals
+
 import pymongo.errors
 
 from pycl.core import Error

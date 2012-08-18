@@ -2,6 +2,8 @@
 
 """Provides functions for managing torrents."""
 
+from __future__ import unicode_literals
+
 import re
 import time
 
@@ -105,22 +107,22 @@ def get_fingerprint(torrent_name):
 
     # Drop any additional info: timestamps, release versions, etc.
     # -->
-    torrent_name = torrent_name.replace(u"г.", "")
+    torrent_name = torrent_name.replace("г.", "")
     torrent_name = re.sub(ur"(:?выпуск|выпуски|обновлено|передачи за|серия|серии|эфир от|эфиры от)(?:\s|$)", "", torrent_name)
 
     for month in (
-        u"январь",   u"января",
-        u"февраль",  u"февраля",
-        u"март",     u"марта",
-        u"апрель",   u"апреля",
-        u"май",      u"мая",
-        u"июнь",     u"июня",
-        u"июль",     u"июля",
-        u"август",   u"августа",
-        u"сентябрь", u"сентября",
-        u"октябрь",  u"октября",
-        u"ноябрь",   u"ноября",
-        u"декабрь",  u"декабря",
+        "январь",   "января",
+        "февраль",  "февраля",
+        "март",     "марта",
+        "апрель",   "апреля",
+        "май",      "мая",
+        "июнь",     "июня",
+        "июль",     "июля",
+        "август",   "августа",
+        "сентябрь", "сентября",
+        "октябрь",  "октября",
+        "ноябрь",   "ноября",
+        "декабрь",  "декабря",
     ):
         torrent_name = torrent_name.replace(month, "")
     # <--
@@ -137,10 +139,10 @@ def get_fingerprint(torrent_name):
     # Try to get most possible short fingerprint <--
 
     # Drop all punctuation and other non-alphabet characters
-    characters = u"abcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщьъыэюя"
+    characters = "abcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщьъыэюя"
     torrent_name = torrent_name.replace(".", " ")
     torrent_name = "".join(
-        c for c in torrent_name if c in u" " + characters)
+        c for c in torrent_name if c in " " + characters)
 
     # Drop several spaces
     torrent_name = re.sub(r"\s+", " ", torrent_name).strip()

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from __future__ import unicode_literals
+
 import unittest
 
 from rutracker.torrents import get_fingerprint
@@ -9,44 +11,44 @@ class TestFingerprint(unittest.TestCase):
     """Tests torrent fingerprint function."""
 
     def test_fingerprint(self):
-        self.assertEquals(u"ночь интеллект", get_fingerprint(
-            u"Ночь. Интеллект. Профессор Черниговская<wbr>: Мифологическ<wbr>ое мышление. В гостях Светлана Адоньева (2009.10.16)<wbr> SATRip"))
+        self.assertEquals("ночь интеллект", get_fingerprint(
+            "Ночь. Интеллект. Профессор Черниговская<wbr>: Мифологическ<wbr>ое мышление. В гостях Светлана Адоньева (2009.10.16)<wbr> SATRip"))
 
-        self.assertEquals(u"история науки", get_fingerprint(
-            u"История науки - Можем ли мы обладать неограниченн<wbr>ой энергией? / BBC. The Story of Science - Can We Have Unlimited Power ? (Michael J. Mosley) [2010, Документальн<wbr>ый сериал, DVB]"))
+        self.assertEquals("история науки", get_fingerprint(
+            "История науки - Можем ли мы обладать неограниченн<wbr>ой энергией? / BBC. The Story of Science - Can We Have Unlimited Power ? (Michael J. Mosley) [2010, Документальн<wbr>ый сериал, DVB]"))
 
-        self.assertEquals(u"контрольная закупка", get_fingerprint(
-            u"Контрольная закупка - Салями Венская (эфир от 2012.02.21) [2012, Реалити-шоу,<wbr> SATRip]"))
+        self.assertEquals("контрольная закупка", get_fingerprint(
+            "Контрольная закупка - Салями Венская (эфир от 2012.02.21) [2012, Реалити-шоу,<wbr> SATRip]"))
 
-        self.assertEquals(u"познавательные истории", get_fingerprint(
-            u"Познавательн<wbr>ые истории (15 передач) [научно-попул<wbr>ярный фильм / Da Vinci Learning, SATRip]"))
+        self.assertEquals("познавательные истории", get_fingerprint(
+            "Познавательн<wbr>ые истории (15 передач) [научно-попул<wbr>ярный фильм / Da Vinci Learning, SATRip]"))
 
-        self.assertEquals(u"мой эрмитаж", get_fingerprint(
-            u" Мой Эрмитаж (31 выпуск) &lt;&lt; Знаменитый Ломоносовски<wbr>й (Императорск<wbr>ий) фарфоровый завод &gt;&gt; (эфир 29.05.2012) (Лев Цуцульковски<wbr>й) [2009-2012 г., Документальн<wbr>ый цикл, познавательн<wbr>ый, SATRip / DVB]"))
+        self.assertEquals("мой эрмитаж", get_fingerprint(
+            " Мой Эрмитаж (31 выпуск) &lt;&lt; Знаменитый Ломоносовски<wbr>й (Императорск<wbr>ий) фарфоровый завод &gt;&gt; (эфир 29.05.2012) (Лев Цуцульковски<wbr>й) [2009-2012 г., Документальн<wbr>ый цикл, познавательн<wbr>ый, SATRip / DVB]"))
 
-        self.assertEquals(u"специальный проект", get_fingerprint(
-            u"Специальный проект: Титаник. Репортаж с того света (Часть 2) [2012, Документальн<wbr>ый, SATRip]"))
+        self.assertEquals("специальный проект", get_fingerprint(
+            "Специальный проект: Титаник. Репортаж с того света (Часть 2) [2012, Документальн<wbr>ый, SATRip]"))
 
-        self.assertEquals(u"собчак живьём", get_fingerprint(
-            u"Собчак живьём. Разговор с Эдуардом Лимоновым (Эфир от 17.05.2012) [2012, Интервью, SATRip]"))
+        self.assertEquals("собчак живьём", get_fingerprint(
+            "Собчак живьём. Разговор с Эдуардом Лимоновым (Эфир от 17.05.2012) [2012, Интервью, SATRip]"))
 
-        self.assertEquals(u"среда обитания", get_fingerprint(
-            u"Среда обитания - Мастера вызывали? (Екатерина Абдулова) [2012, Документальн<wbr>ый, DVB]"))
+        self.assertEquals("среда обитания", get_fingerprint(
+            "Среда обитания - Мастера вызывали? (Екатерина Абдулова) [2012, Документальн<wbr>ый, DVB]"))
 
-        self.assertEquals(u"тайны века", get_fingerprint(
-            u"Тайны Века (Александр Мень. Завтра меня убьют, Кто утопил &quot;Эстонию<wbr>&quot;, Волынов. Падение из космоса, Рихард Зорге, которого мы не знали)[2003-2007 г., Документальн<wbr>ый]"))
+        self.assertEquals("тайны века", get_fingerprint(
+            "Тайны Века (Александр Мень. Завтра меня убьют, Кто утопил &quot;Эстонию<wbr>&quot;, Волынов. Падение из космоса, Рихард Зорге, которого мы не знали)[2003-2007 г., Документальн<wbr>ый]"))
 
-        self.assertEquals(u"совершенно секретно", get_fingerprint(
-            u"«Совершенно секретно». «Железный Лев». Рохлин (Александр Коридзе) [2008, IPTVRip]"))
+        self.assertEquals("совершенно секретно", get_fingerprint(
+            "«Совершенно секретно». «Железный Лев». Рохлин (Александр Коридзе) [2008, IPTVRip]"))
 
-        self.assertEquals(u"national geografic", get_fingerprint(
-            u"National Geografic 20 в 1 / National Geografic 20 in 1 [DVDRip]"))
+        self.assertEquals("national geografic", get_fingerprint(
+            "National Geografic 20 в 1 / National Geografic 20 in 1 [DVDRip]"))
 
-        self.assertEquals(u"national geografic", get_fingerprint(
-            u"National Geografic 20в1 / National Geografic 20 in 1 [DVDRip]"))
+        self.assertEquals("national geografic", get_fingerprint(
+            "National Geografic 20в1 / National Geografic 20 in 1 [DVDRip]"))
 
-        self.assertEquals(u"пенн и теллер", get_fingerprint(
-            u"[изменено 7.07, добавлена 2x01] Пенн и Теллер: Херня! / Penn&Teller: Bullshit! [2003-2010, Научно-популярная передача, SATRip, 15 серий из 89]"))
+        self.assertEquals("пенн и теллер", get_fingerprint(
+            "[изменено 7.07, добавлена 2x01] Пенн и Теллер: Херня! / Penn&Teller: Bullshit! [2003-2010, Научно-популярная передача, SATRip, 15 серий из 89]"))
 
 if __name__ == '__main__':
     unittest.main()

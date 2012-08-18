@@ -2,12 +2,12 @@
 
 """RuTracker.org RSS server."""
 
+from __future__ import unicode_literals
+
 import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
-import pycl.main
-pycl.main.set_environment()
 
 import datetime
 import logging
@@ -18,6 +18,7 @@ from wsgiref.simple_server import make_server
 import PyRSS2Gen
 
 import pycl.log
+import pycl.main
 
 from pycl.core import Error
 
@@ -36,7 +37,7 @@ def application(environ, start_response):
     method = environ["REQUEST_METHOD"]
     path = environ["PATH_INFO"]
 
-    LOG.info(u"Handling %s request to %s...", method, path)
+    LOG.info("Handling %s request to %s...", method, path)
 
     try:
         if method != "GET":
@@ -69,7 +70,7 @@ def application(environ, start_response):
             ]
         ).to_xml("utf-8")
     except Exception as e:
-        LOG.error(u"Failed to process the request to %s: %s", path, e)
+        LOG.error("Failed to process the request to %s: %s", path, e)
         http_headers["Content-Type"] = "text/plain"
         http_body = [ http_code ]
     else:
@@ -84,11 +85,12 @@ def application(environ, start_response):
 def serve(host, port):
     """Simple HTTP server for development."""
 
-    LOG.info(u"Running HTTP server on %s:%s...", host, port)
+    LOG.info("Running HTTP server on %s:%s...", host, port)
     server = make_server(host, port, application)
     server.serve_forever()
 
 
+pycl.main.setup_environment()
 pycl.log.setup()
 
 if __name__ == "__main__":

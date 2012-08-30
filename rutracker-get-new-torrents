@@ -289,10 +289,7 @@ def main():
     try:
         pid_file_fd = pycl.daemon.acquire_pidfile(pid_file)
     except pycl.daemon.PidFileLocked as e:
-        if cron_mode:
-            LOG.debug("Exiting: %s", e)
-        else:
-            raise
+        LOG.error("Exiting: the PID file is locked by another process.")
     else:
         try:
             get_new_torrents()

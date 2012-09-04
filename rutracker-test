@@ -50,5 +50,8 @@ class TestFingerprint(unittest.TestCase):
         self.assertEquals("пенн и теллер", get_fingerprint(
             "[изменено 7.07, добавлена 2x01] Пенн и Теллер: Херня! / Penn&Teller: Bullshit! [2003-2010, Научно-популярная передача, SATRip, 15 серий из 89]"))
 
+        self.assertEquals("главная дорога", get_fingerprint(
+            "Главная дорога (Эфир от 01-09-2012) (2012) SatRip"))
+
 if __name__ == '__main__':
     unittest.main()

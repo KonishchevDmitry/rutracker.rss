@@ -81,7 +81,7 @@ def get_fingerprint(torrent_name):
     date_regex = re.compile(ur"^(.+)\s+(?:\d{1,2}\.\d{1,2}\.\d{4}|\d{4}\.\d{2}\.\d{2})(.*)$")
     # Unable to merge it into date_regex due to some strange behaviour of re
     # module.
-    additional_date_regex = re.compile(ur"^(.+)\s+по\s+(?:\d{1,2}\.\d{1,2}\.\d{4}|\d{4}\.\d{2}\.\d{2})(.*)$")
+    additional_date_regex = re.compile(ur"^(.+)\s+(?:по|от)\s+(?:\d{1,2}\.\d{1,2}\.\d{4}|\d{4}\.\d{2}\.\d{2})(.*)$")
     release_counter_regex = re.compile(ur"^(.+)\s+\d+\s*(?:в|из)\s*\d+(.*)$")
 
     old_torrent_name = None

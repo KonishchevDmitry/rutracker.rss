@@ -23,6 +23,7 @@ import pycl.log
 import pycl.main
 import pycl.misc
 
+from pycl import constants
 from pycl.core import Error, LogicalError
 from pycl.misc import to_system_encoding
 
@@ -103,7 +104,8 @@ class Rutracker:
             opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookies))
 
             opener.open("http://login.rutracker.org/forum/login.php",
-                "login_username={0}&login_password={1}&login=%C2%F5%EE%E4".format(login, password))
+                "login_username={0}&login_password={1}&login=%C2%F5%EE%E4".format(login, password),
+                timeout = constants.MINUTE_SECONDS / 2)
 
             self.__opener = opener
         except Exception as e:

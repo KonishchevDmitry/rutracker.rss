@@ -73,7 +73,7 @@ class Rutracker:
             time.sleep(self.__last_request_time + min_difference - time.time())
 
         try:
-            return self.__opener.open(url, data).read().decode("cp1251")
+            return self.__opener.open(url, data, timeout = constants.MINUTE_SECONDS / 2).read().decode("cp1251")
         except Exception as e:
             raise Error("Unable to fetch page {0}: {1}.", url, e)
         finally:

@@ -10,6 +10,7 @@ from __future__ import unicode_literals
 
 import cookielib
 import getopt
+import errno
 import logging
 import os
 import re
@@ -75,6 +76,9 @@ class Rutracker:
         try:
             return self.__opener.open(url, data, timeout = constants.MINUTE_SECONDS / 2).read().decode("cp1251")
         except Exception as e:
+            if isinstance(e, EnvironmentError) and e.errno == errno.ECONNREFUSED:
+                raise OnMaintenanceError()
+
             raise Error("Unable to fetch page {0}: {1}.", url, e)
         finally:
             self.__last_request_time = time.time()
@@ -109,6 +113,9 @@ class Rutracker:
 
             self.__opener = opener
         except Exception as e:
+            if isinstance(e, EnvironmentError) and e.errno == errno.ECONNREFUSED:
+                raise OnMaintenanceError()
+
             raise Error("Unable to login to rutracker.org: {0}.", e)
 
 
@@ -210,8 +217,10 @@ def get_new_torrents():
 
                 try:
                     torrent_page = open("debug/torrent.html").read().decode("cp1251") if _DEVELOP_MODE else client.request(torrent_url)
+                except OnMaintenanceError:
+                    raise
                 except Exception as e:
-                    LOG.error("Failed fetch torrent page %s: %s", torrent_url, e)
+                    LOG.error("Failed to fetch torrent page %s: %s", torrent_url, e)
                 else:
                     match = torrent_description_regex.search(torrent_page)
 

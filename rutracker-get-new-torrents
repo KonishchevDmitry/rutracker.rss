@@ -76,7 +76,7 @@ class Rutracker:
         try:
             return self.__opener.open(url, data, timeout = constants.MINUTE_SECONDS / 2).read().decode("cp1251")
         except Exception as e:
-            if isinstance(e, EnvironmentError) and e.errno == errno.ECONNREFUSED:
+            if isinstance(e, EnvironmentError) and e.errno in ( errno.ECONNREFUSED, errno.ECONNRESET ):
                 raise OnMaintenanceError()
 
             raise Error("Unable to fetch page {0}: {1}.", url, e)
@@ -113,7 +113,7 @@ class Rutracker:
 
             self.__opener = opener
         except Exception as e:
-            if isinstance(e, EnvironmentError) and e.errno == errno.ECONNREFUSED:
+            if isinstance(e, EnvironmentError) and e.errno in ( errno.ECONNREFUSED, errno.ECONNRESET ):
                 raise OnMaintenanceError()
 
             raise Error("Unable to login to rutracker.org: {0}.", e)

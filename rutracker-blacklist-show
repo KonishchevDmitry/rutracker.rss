@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import sys
 
 import pycl.main
-from pycl.misc import to_unicode
+from pycl.misc import to_system_encoding, to_unicode
 
 from rutracker import blacklist
 
@@ -22,8 +22,8 @@ def main():
             arg = to_unicode(sys.argv[1]), command = to_unicode(sys.argv[0])))
 
     for rule in blacklist.find():
-        print "{rule}{regex}".format(
-            rule = rule["_id"], regex = " (regex)" if rule.get("regex", False) else "")
+        print to_system_encoding("{rule}{regex}".format(
+            rule = rule["_id"], regex = " (regex)" if rule.get("regex", False) else ""))
 
 
 if __name__ == "__main__":

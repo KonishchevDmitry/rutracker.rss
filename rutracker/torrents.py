@@ -66,6 +66,9 @@ def get_fingerprint(torrent_name):
     identify it's group (TV show).
     """
 
+    # Minimize typing differences
+    torrent_name = torrent_name.replace("ё", "е")
+
     # Unescape HTML entities
     torrent_name = HTMLParser().unescape(torrent_name)
 

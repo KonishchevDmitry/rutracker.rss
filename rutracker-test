@@ -29,8 +29,8 @@ class TestFingerprint(unittest.TestCase):
         self.assertEquals("специальный проект", get_fingerprint(
             "Специальный проект: Титаник. Репортаж с того света (Часть 2) [2012, Документальн<wbr>ый, SATRip]"))
 
-        self.assertEquals("собчак живьём", get_fingerprint(
-            "Собчак живьём. Разговор с Эдуардом Лимоновым (Эфир от 17.05.2012) [2012, Интервью, SATRip]"))
+        self.assertEquals("собчак живьем", get_fingerprint(
+            "Собчак живьем. Разговор с Эдуардом Лимоновым (Эфир от 17.05.2012) [2012, Интервью, SATRip]"))
 
         self.assertEquals("среда обитания", get_fingerprint(
             "Среда обитания - Мастера вызывали? (Екатерина Абдулова) [2012, Документальн<wbr>ый, DVB]"))
@@ -58,6 +58,12 @@ class TestFingerprint(unittest.TestCase):
 
         self.assertEquals("все так", get_fingerprint(
             "Все так (Эхо Москвы, RTVi) [2012, биография, SATRip] 17 выпусков"))
+
+        self.assertEquals("дешево и сердито", get_fingerprint(
+            "Дешево и сердито. Выпуск от 02.11.2012 [2012, Тв-шоу, DVB]"))
+
+        self.assertEquals("дешево и сердито", get_fingerprint(
+            "Дёшево и сердито. Выпуск от 02.11.2012 [2012, Тв-шоу, DVB]"))
 
 if __name__ == '__main__':
     unittest.main()

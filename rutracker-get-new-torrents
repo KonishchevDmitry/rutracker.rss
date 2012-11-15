@@ -92,12 +92,7 @@ class Rutracker:
         try:
             return self.__opener.open(url, data, timeout = constants.MINUTE_SECONDS).read().decode("cp1251")
         except Exception as e:
-            if isinstance(e, EnvironmentError) and e.errno == errno.ECONNREFUSED:
-                raise OnMaintenanceError()
-
-            if isinstance(e, socket.error):
-                raise NetworkError(e)
-
+            self.__examine_error(e)
             raise Error("Unable to fetch page {0}: {1}.", url, e)
         finally:
             self.__last_request_time = time.time()
@@ -116,6 +111,19 @@ class Rutracker:
             search_id = self.__search_id, start = page * 50))
 
 
+    def __examine_error(error):
+        """Examines an error."""
+
+        if (
+            isinstance(error, EnvironmentError) and
+            error.errno == errno.ECONNREFUSED
+        ):
+            raise OnMaintenanceError()
+
+        if isinstance(error, ( socket.error, IOError )):
+            raise NetworkError(e)
+
+
     def __login(self):
         """Logins to rutracker.org."""
 
@@ -132,12 +140,7 @@ class Rutracker:
 
             self.__opener = opener
         except Exception as e:
-            if isinstance(e, EnvironmentError) and e.errno == errno.ECONNREFUSED:
-                raise OnMaintenanceError()
-
-            if isinstance(e, socket.error):
-                raise NetworkError(e)
-
+            self.__examine_error(e)
             raise Error("Unable to login to rutracker.org: {0}.", e)
 
 

@@ -182,7 +182,7 @@ def get_new_torrents():
     torrent_regex = re.compile(
         tag_regex("a", "tLink", "href", r"""[^'"]+/viewtopic\.php\?t=(\d+)""") + r"(.+?)</a>"
         ".+?" +
-        tag_regex("td", match_param = "title", match_value = "Добавлен") + r"\s*<u>\s*(\d+)\s*</u>",
+        tag_regex("td", "row4") + r"\s*<u>\s*(\d+)\s*</u>",
         re.IGNORECASE | re.DOTALL | re.VERBOSE)
 
     # A reqular expression that matches torrent description on its page

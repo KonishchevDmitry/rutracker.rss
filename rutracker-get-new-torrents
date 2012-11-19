@@ -111,7 +111,7 @@ class Rutracker:
             search_id = self.__search_id, start = page * 50))
 
 
-    def __examine_error(error):
+    def __examine_error(self, error):
         """Examines an error."""
 
         if (

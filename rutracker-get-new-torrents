@@ -121,7 +121,7 @@ class Rutracker:
             raise OnMaintenanceError()
 
         if isinstance(error, ( socket.error, IOError )):
-            raise NetworkError(e)
+            raise NetworkError(error)
 
 
     def __login(self):

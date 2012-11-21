@@ -181,8 +181,9 @@ def get_new_torrents():
     # A regular expression for a link to torrent page on http://rutracker.org/
     torrent_regex = re.compile(
         tag_regex("a", "tLink", "href", r"""[^'"]+/viewtopic\.php\?t=(\d+)""") + r"(.+?)</a>"
-        ".+?" +
-        tag_regex("td", "row4") + r"\s*<u>\s*(\d+)\s*</u>",
+        ".+" +
+        tag_regex("td", "row4") + r"\s*<u>\s*(\d+)\s*</u>" +
+        ur"\s*<p>\s*\d{1,2}-(?:Янв|Фев|Мар|Апр|Май|Июн|Июл|Авг|Сен|Окт|Ноя|Дек)-\d{2}</p>",
         re.IGNORECASE | re.DOTALL | re.VERBOSE)
 
     # A reqular expression that matches torrent description on its page

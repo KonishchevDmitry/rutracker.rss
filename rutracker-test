@@ -1,7 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-from __future__ import unicode_literals
 
 import unittest
 
@@ -11,67 +9,67 @@ class TestFingerprint(unittest.TestCase):
     """Tests torrent fingerprint function."""
 
     def test_fingerprint(self):
-        self.assertEquals("ночь интеллект", get_fingerprint(
+        self.assertEqual("ночь интеллект", get_fingerprint(
             "Ночь. Интеллект. Профессор Черниговская<wbr>: Мифологическ<wbr>ое мышление. В гостях Светлана Адоньева (2009.10.16)<wbr> SATRip"))
 
-        self.assertEquals("история науки", get_fingerprint(
+        self.assertEqual("история науки", get_fingerprint(
             "История науки - Можем ли мы обладать неограниченн<wbr>ой энергией? / BBC. The Story of Science - Can We Have Unlimited Power ? (Michael J. Mosley) [2010, Документальн<wbr>ый сериал, DVB]"))
 
-        self.assertEquals("контрольная закупка", get_fingerprint(
+        self.assertEqual("контрольная закупка", get_fingerprint(
             "Контрольная закупка - Салями Венская (эфир от 2012.02.21) [2012, Реалити-шоу,<wbr> SATRip]"))
 
-        self.assertEquals("познавательные истории", get_fingerprint(
+        self.assertEqual("познавательные истории", get_fingerprint(
             "Познавательн<wbr>ые истории (15 передач) [научно-попул<wbr>ярный фильм / Da Vinci Learning, SATRip]"))
 
-        self.assertEquals("мой эрмитаж", get_fingerprint(
+        self.assertEqual("мой эрмитаж", get_fingerprint(
             " Мой Эрмитаж (31 выпуск) &lt;&lt; Знаменитый Ломоносовски<wbr>й (Императорск<wbr>ий) фарфоровый завод &gt;&gt; (эфир 29.05.2012) (Лев Цуцульковски<wbr>й) [2009-2012 г., Документальн<wbr>ый цикл, познавательн<wbr>ый, SATRip / DVB]"))
 
-        self.assertEquals("специальный проект", get_fingerprint(
+        self.assertEqual("специальный проект", get_fingerprint(
             "Специальный проект: Титаник. Репортаж с того света (Часть 2) [2012, Документальн<wbr>ый, SATRip]"))
 
-        self.assertEquals("собчак живьем", get_fingerprint(
+        self.assertEqual("собчак живьем", get_fingerprint(
             "Собчак живьем. Разговор с Эдуардом Лимоновым (Эфир от 17.05.2012) [2012, Интервью, SATRip]"))
 
-        self.assertEquals("среда обитания", get_fingerprint(
+        self.assertEqual("среда обитания", get_fingerprint(
             "Среда обитания - Мастера вызывали? (Екатерина Абдулова) [2012, Документальн<wbr>ый, DVB]"))
 
-        self.assertEquals("тайны века", get_fingerprint(
+        self.assertEqual("тайны века", get_fingerprint(
             "Тайны Века (Александр Мень. Завтра меня убьют, Кто утопил &quot;Эстонию<wbr>&quot;, Волынов. Падение из космоса, Рихард Зорге, которого мы не знали)[2003-2007 г., Документальн<wbr>ый]"))
 
-        self.assertEquals("совершенно секретно", get_fingerprint(
+        self.assertEqual("совершенно секретно", get_fingerprint(
             "«Совершенно секретно». «Железный Лев». Рохлин (Александр Коридзе) [2008, IPTVRip]"))
 
-        self.assertEquals("national geografic", get_fingerprint(
+        self.assertEqual("national geografic", get_fingerprint(
             "National Geografic 20 в 1 / National Geografic 20 in 1 [DVDRip]"))
 
-        self.assertEquals("national geografic", get_fingerprint(
+        self.assertEqual("national geografic", get_fingerprint(
             "National Geografic 20в1 / National Geografic 20 in 1 [DVDRip]"))
 
-        self.assertEquals("пенн и теллер", get_fingerprint(
+        self.assertEqual("пенн и теллер", get_fingerprint(
             "[изменено 7.07, добавлена 2x01] Пенн и Теллер: Херня! / Penn&Teller: Bullshit! [2003-2010, Научно-популярная передача, SATRip, 15 серий из 89]"))
 
-        self.assertEquals("главная дорога", get_fingerprint(
+        self.assertEqual("главная дорога", get_fingerprint(
             "Главная дорога (Эфир от 01-09-2012) (2012) SatRip"))
 
-        self.assertEquals("в мире животных с николаем дроздовым", get_fingerprint(
+        self.assertEqual("в мире животных с николаем дроздовым", get_fingerprint(
             "В мире животных с Николаем Дроздовым от 2012.08.04 [2012, Документальн<wbr>ый, DVB]"))
 
-        self.assertEquals("все так", get_fingerprint(
+        self.assertEqual("все так", get_fingerprint(
             "Все так (Эхо Москвы, RTVi) [2012, биография, SATRip] 17 выпусков"))
 
-        self.assertEquals("дешево и сердито", get_fingerprint(
+        self.assertEqual("дешево и сердито", get_fingerprint(
             "Дешево и сердито. Выпуск от 02.11.2012 [2012, Тв-шоу, DVB]"))
 
-        self.assertEquals("дешево и сердито", get_fingerprint(
+        self.assertEqual("дешево и сердито", get_fingerprint(
             "Дёшево и сердито. Выпуск от 02.11.2012 [2012, Тв-шоу, DVB]"))
 
-        self.assertEquals("верное средство", get_fingerprint(
+        self.assertEqual("верное средство", get_fingerprint(
             'Верное средство"(1-4 выпуски)" [2012, Документальльный, SATRip]'))
 
-        self.assertEquals("зафронтовые разведчики", get_fingerprint(
+        self.assertEqual("зафронтовые разведчики", get_fingerprint(
             "Зафронтовые разведчики, 1 серия из 8 (Вера Кильчевская) [2012, Документальный, DVB]"))
 
-        self.assertEquals("прокурорская проверка", get_fingerprint(
+        self.assertEqual("прокурорская проверка", get_fingerprint(
             "Прокурорская проверка эфир с 21.01.2013 по 08.02.2013 (Андрей Морозов, Константин Смирнов, Владимир Морозов) [2013, ТелеДектив, SATRip]"))
 
 if __name__ == '__main__':

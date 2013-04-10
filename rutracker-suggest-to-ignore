@@ -1,15 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """Suggests torrents to ignore."""
 
-from __future__ import unicode_literals
-
 import sys
 
-import pycl.main
-
 from pycl.cli.text_table import TextTable
-from pycl.misc import to_unicode
 
 import rutracker.torrents
 
@@ -17,11 +12,9 @@ import rutracker.torrents
 def main():
     """The script's main function."""
 
-    pycl.main.setup_environment()
-
     if len(sys.argv) != 1:
         sys.exit("Invalid argument: {arg}\nUsage: {command}".format(
-            arg = to_unicode(sys.argv[1]), command = to_unicode(sys.argv[0])))
+            arg = sys.argv[1], command = sys.argv[0]))
 
     torrents = rutracker.torrents.get_stats(blacklist = True)[:50]
 
@@ -39,7 +32,7 @@ def main():
             { "id": "name",   "name": "Name",  "align": "left", "max_width": 80 },
         ])
     else:
-        print "There is nothing to suggest."
+        print("There is nothing to suggest.")
 
 
 if __name__ == "__main__":

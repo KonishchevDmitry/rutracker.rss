@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 """
@@ -6,11 +6,9 @@ Receives new torrents info from http://rutracker.org/ and stores them into the
 database.
 """
 
-from __future__ import unicode_literals
-
-import cookielib
-import getopt
 import errno
+import getopt
+import http.cookiejar
 import logging
 import os
 import re
@@ -18,16 +16,15 @@ import socket
 import sys
 import tempfile
 import time
-import urllib2
+import urllib.request
+
+from psys import eintr_retry
 
 import pycl.daemon
 import pycl.log
-import pycl.main
-import pycl.misc
 
 from pycl import constants
 from pycl.core import Error, LogicalError
-from pycl.misc import to_system_encoding
 
 import rutracker.torrents
 
@@ -90,7 +87,9 @@ class Rutracker:
             time.sleep(self.__last_request_time + min_difference - time.time())
 
         try:
-            return self.__opener.open(url, data, timeout = constants.MINUTE_SECONDS).read().decode("cp1251")
+            return self.__opener.open(url,
+                data if data is None else data.encode("ascii"),
+                timeout = constants.MINUTE_SECONDS).read().decode("cp1251")
         except Exception as e:
             self.__examine_error(e)
             raise Error("Unable to fetch page {0}: {1}.", url, e)
@@ -131,11 +130,11 @@ class Rutracker:
             credentials_path = os.path.join(os.path.dirname(_SCRIPT_PATH), "credentials")
             login, password = ( string.strip() for string in open(credentials_path).read().strip().split("\n") )
 
-            cookies = cookielib.FileCookieJar("cookies")
-            opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(cookies))
+            cookies = http.cookiejar.FileCookieJar("cookies")
+            opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookies))
 
             opener.open("http://login.rutracker.org/forum/login.php",
-                "login_username={0}&login_password={1}&login=%C2%F5%EE%E4".format(login, password),
+                "login_username={0}&login_password={1}&login=%C2%F5%EE%E4".format(login, password).encode("ascii"),
                 timeout = constants.MINUTE_SECONDS)
 
             self.__opener = opener
@@ -183,7 +182,7 @@ def get_new_torrents():
         tag_regex("a", "tLink", "href", r"""[^'"]+/viewtopic\.php\?t=(\d+)""") + r"(.+?)</a>"
         ".+" +
         tag_regex("td", "row4") + r"\s*<u>\s*(\d+)\s*</u>" +
-        ur"\s*<p>\s*\d{1,2}-(?:Янв|Фев|Мар|Апр|Май|Июн|Июл|Авг|Сен|Окт|Ноя|Дек)-\d{2}</p>",
+        r"\s*<p>\s*\d{1,2}-(?:Янв|Фев|Мар|Апр|Май|Июн|Июл|Авг|Сен|Окт|Ноя|Дек)-\d{2}</p>",
         re.IGNORECASE | re.DOTALL | re.VERBOSE)
 
     # A reqular expression that matches torrent description on its page
@@ -198,7 +197,7 @@ def get_new_torrents():
     torrents_per_page = 50
     total_torrents = pages_to_scan * torrents_per_page
 
-    for page in xrange(0, pages_to_scan):
+    for page in range(0, pages_to_scan):
         LOG.info("Getting page %s...", page)
 
         if _DEVELOP_MODE:
@@ -289,8 +288,6 @@ def get_new_torrents():
 def main():
     """The script's main function."""
 
-    pycl.main.setup_environment()
-
     # Parsing command line arguments -->
     cron_mode = False
     debug_mode = False
@@ -333,8 +330,8 @@ def main():
         except TemporaryError as e:
             LOG.warning(e)
         finally:
-            pycl.misc.syscall_wrapper(os.close, pid_file_fd)
-            pycl.misc.syscall_wrapper(os.unlink, to_system_encoding(pid_file))
+            eintr_retry(os.close)(pid_file_fd)
+            eintr_retry(os.unlink)(pid_file)
 
 
 def tag_regex(tag, tag_class = None, match_param = None, match_value = """([^'"]*)"""):
@@ -364,7 +361,7 @@ def tag_regex(tag, tag_class = None, match_param = None, match_value = """([^'"]
         regex += tag_attrs_regex
 
     if match_param is not None:
-        regex += ur"""\s+{0}\s*=\s*['"]{1}['"]""".format(match_param, match_value)
+        regex += r"""\s+{0}\s*=\s*['"]{1}['"]""".format(match_param, match_value)
         regex += tag_attrs_regex
 
     return regex + r"\s*>"

@@ -1,14 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """Adds a torrent to blacklist."""
-
-from __future__ import unicode_literals
 
 import sys
 
 import pycl.cli.utils
-import pycl.main
-from pycl.misc import to_unicode
 
 import rutracker.torrents
 from rutracker import blacklist
@@ -17,12 +13,10 @@ from rutracker import blacklist
 def main():
     """The script's main function."""
 
-    pycl.main.setup_environment()
-
     if len(sys.argv) != 1:
-        sys.exit("Usage: {cmd}".format(cmd = to_unicode(sys.argv[0])))
+        sys.exit("Usage: {cmd}".format(cmd = sys.argv[0]))
 
-    torrent_name = to_unicode(raw_input("Please enter the torrent name: "))
+    torrent_name = input("Please enter the torrent name: ")
     fingerprint = rutracker.torrents.get_fingerprint(torrent_name)
     if pycl.cli.utils.question_user("Add '{0}' to the blacklist?", fingerprint):
         blacklist.add(fingerprint)

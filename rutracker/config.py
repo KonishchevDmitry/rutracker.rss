@@ -1,7 +1,5 @@
 """Stores configuration values."""
 
-from __future__ import unicode_literals
-
 from pycl import constants
 
 MAX_FEED_AGE = 5 * constants.DAY_SECONDS

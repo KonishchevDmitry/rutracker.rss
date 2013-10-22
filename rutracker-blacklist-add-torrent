@@ -4,7 +4,7 @@
 
 import sys
 
-import pycl.cli.utils
+import pcli.user_input
 
 import rutracker.torrents
 from rutracker import blacklist
@@ -18,7 +18,7 @@ def main():
 
     torrent_name = input("Please enter the torrent name: ")
     fingerprint = rutracker.torrents.get_fingerprint(torrent_name)
-    if pycl.cli.utils.question_user("Add '{0}' to the blacklist?", fingerprint):
+    if pcli.user_input.question("Add '{0}' to the blacklist?", fingerprint):
         blacklist.add(fingerprint)
 
 

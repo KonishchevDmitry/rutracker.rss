@@ -4,7 +4,7 @@
 
 import sys
 
-from pycl.cli.text_table import TextTable
+from pcli.text_table import Table, Column
 
 import rutracker.torrents
 
@@ -19,18 +19,13 @@ def main():
     torrents = rutracker.torrents.get_stats(blacklist = True)[:25]
 
     if torrents:
-        table = TextTable()
-        for torrent in torrents:
-            table.add_row({
-                "count": torrent["count"],
-                "group": torrent["fingerprint"],
-                "name":  torrent["name"],
-            })
-        table.draw([
-            { "id": "count",  "name": "Count", "align": "right" },
-            { "id": "group",  "name": "Group", "align": "left"  },
-            { "id": "name",   "name": "Name",  "align": "left", "max_width": 80 },
+        table = Table([
+            Column(id="count",       name="Count", align=Column.ALIGN_RIGHT ),
+            Column(id="fingerprint", name="Group", align=Column.ALIGN_LEFT  ),
+            Column(id="name",        name="Name",  align=Column.ALIGN_LEFT, max_width=80),
         ])
+        table.add_rows(torrents)
+        table.draw()
     else:
         print("There is nothing to suggest.")
 

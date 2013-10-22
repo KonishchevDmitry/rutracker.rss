@@ -5,7 +5,7 @@
 import re
 import time
 
-from HTMLParser import HTMLParser
+from html.parser import HTMLParser
 
 import pymongo
 
@@ -64,6 +64,9 @@ def get_fingerprint(torrent_name):
     identify it's group (TV show).
     """
 
+    # Minimize typing differences
+    torrent_name = torrent_name.replace("ё", "е")
+
     # Unescape HTML entities
     torrent_name = HTMLParser().unescape(torrent_name)
 
@@ -76,11 +79,11 @@ def get_fingerprint(torrent_name):
     preceding_square_braces_regex = re.compile(r"^(\s*)\[[^\[\]]+?\](.+)$")
     round_braces_regex = re.compile(r"^(.+(?:\s+|\]))\([^()]+?\)(.*)$")
     angle_braces_regex = re.compile(r"^(.+)\s+<<.*?>>(.*)$")
-    date_regex = re.compile(ur"^(.+)\s+(?:\d{1,2}\.\d{1,2}\.\d{4}|\d{4}\.\d{2}\.\d{2})(.*)$")
+    date_regex = re.compile(r"^(.+)\s+(?:\d{1,2}\.\d{1,2}\.\d{4}|\d{4}\.\d{2}\.\d{2})(.*)$")
     # Unable to merge it into date_regex due to some strange behaviour of re
     # module.
-    additional_date_regex = re.compile(ur"^(.+)\s+по\s+(?:\d{1,2}\.\d{1,2}\.\d{4}|\d{4}\.\d{2}\.\d{2})(.*)$")
-    release_counter_regex = re.compile(ur"^(.+)\s+\d+\s*(?:в|из)\s*\d+(.*)$")
+    additional_date_regex = re.compile(r"^(.+)\s+(?:по|от)\s+(?:\d{1,2}\.\d{1,2}\.\d{4}|\d{4}\.\d{2}\.\d{2})(.*)$")
+    release_counter_regex = re.compile(r"^(.+)\s+\d+\s*(?:в|из)\s*\d+(.*)$")
 
     old_torrent_name = None
     while torrent_name != old_torrent_name:
@@ -105,42 +108,42 @@ def get_fingerprint(torrent_name):
 
     # Drop any additional info: timestamps, release versions, etc.
     # -->
-    torrent_name = torrent_name.replace(u"г.", "")
-    torrent_name = re.sub(ur"(:?выпуск|выпуски|обновлено|передачи за|серия|серии|эфир от|эфиры от)(?:\s|$)", "", torrent_name)
+    torrent_name = torrent_name.replace("г.", "")
+    torrent_name = re.sub(r"(:?выпуск|выпуски|выпусков|обновлено|передачи за|серия из|серия|серии|эфир с|эфир от|эфиры от|satrip)(?:\s|\)|$)", "", torrent_name)
 
     for month in (
-        u"январь",   u"января",
-        u"февраль",  u"февраля",
-        u"март",     u"марта",
-        u"апрель",   u"апреля",
-        u"май",      u"мая",
-        u"июнь",     u"июня",
-        u"июль",     u"июля",
-        u"август",   u"августа",
-        u"сентябрь", u"сентября",
-        u"октябрь",  u"октября",
-        u"ноябрь",   u"ноября",
-        u"декабрь",  u"декабря",
+        "январь",   "января",
+        "февраль",  "февраля",
+        "март",     "марта",
+        "апрель",   "апреля",
+        "май",      "мая",
+        "июнь",     "июня",
+        "июль",     "июля",
+        "август",   "августа",
+        "сентябрь", "сентября",
+        "октябрь",  "октября",
+        "ноябрь",   "ноября",
+        "декабрь",  "декабря",
     ):
         torrent_name = torrent_name.replace(month, "")
     # <--
 
     # Try to get most possible short fingerprint -->
     torrent_name = re.sub(
-        ur"^«([^»]{6,})»", r"\1", torrent_name)
+        r"^«([^»]{6,})»", r"\1", torrent_name)
 
     torrent_name = re.sub(
-        ur'^"([^»]{6,})"', r"\1", torrent_name)
+        r'^"([^»]{6,})"', r"\1", torrent_name)
 
     torrent_name = re.sub(
-        ur"^([0-9a-zабвгдеёжзийклмнопрстуфхцчшщьъыэюя., \-:]{6,}?(?:[:.?!]| - | — |\|)).*", r"\1", torrent_name)
+        r"^([0-9a-zабвгдеёжзийклмнопрстуфхцчшщьъыэюя., \-:]{6,}?(?:[:.?!]| - | — |\|)).*", r"\1", torrent_name)
     # Try to get most possible short fingerprint <--
 
     # Drop all punctuation and other non-alphabet characters
-    characters = u"abcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщьъыэюя"
+    characters = "abcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщьъыэюя"
     torrent_name = torrent_name.replace(".", " ")
     torrent_name = "".join(
-        c for c in torrent_name if c in u" " + characters)
+        c for c in torrent_name if c in " " + characters)
 
     # Drop several spaces
     torrent_name = re.sub(r"\s+", " ", torrent_name).strip()

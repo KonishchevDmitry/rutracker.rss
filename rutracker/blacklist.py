@@ -1,7 +1,5 @@
 """Provides functions for managing torrent blacklist."""
 
-import pymongo.errors
-
 from pycl.core import Error
 
 from rutracker.database import coll

@@ -1,13 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """Shows blacklist rules."""
 
-import pycl.main
-pycl.main.set_environment()
-
 import sys
-
-from pycl.misc import to_unicode
 
 from rutracker import blacklist
 
@@ -16,12 +11,12 @@ def main():
     """The script's main function."""
 
     if len(sys.argv) != 1:
-        sys.exit(u"Invalid argument: {arg}\nUsage: {command}".format(
-            arg = to_unicode(sys.argv[1]), command = to_unicode(sys.argv[0])))
+        sys.exit("Invalid argument: {arg}\nUsage: {command}".format(
+            arg = sys.argv[1], command = sys.argv[0]))
 
     for rule in blacklist.find():
-        print u"{rule}{regex}".format(
-            rule = rule["_id"], regex = " (regex)" if rule.get("regex", False) else "")
+        print("{rule}{regex}".format(
+            rule = rule["_id"], regex = " (regex)" if rule.get("regex", False) else ""))
 
 
 if __name__ == "__main__":

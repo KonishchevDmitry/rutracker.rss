@@ -1,14 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """Removes a rule from the blacklist."""
-
-import pycl.main
-pycl.main.set_environment()
 
 import sys
 
 from pycl.core import Error
-from pycl.misc import to_unicode
 
 from rutracker import blacklist
 
@@ -17,14 +13,12 @@ def main():
     """The script's main function."""
 
     if len(sys.argv) != 2:
-        sys.exit(u"Usage: {cmd} rule".format(cmd = to_unicode(sys.argv[0])))
-
-    rule = to_unicode(sys.argv[1])
+        sys.exit("Usage: {cmd} rule".format(cmd = sys.argv[0]))
 
     try:
-        blacklist.remove(rule)
+        blacklist.remove(sys.argv[1])
     except Error as e:
-        sys.exit(unicode(e))
+        sys.exit(str(e))
 
 
 if __name__ == "__main__":

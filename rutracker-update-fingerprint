@@ -1,13 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 """Updates torrent fingerprints."""
 
-import pycl.main
-pycl.main.set_environment()
-
 import sys
-
-from pycl.misc import to_unicode
 
 import rutracker.torrents
 
@@ -16,8 +11,8 @@ def main():
     """The script's main function."""
 
     if len(sys.argv) != 1:
-        sys.exit(u"Invalid argument: {arg}\nUsage: {command}".format(
-            arg = to_unicode(sys.argv[1]), command = to_unicode(sys.argv[0])))
+        sys.exit("Invalid argument: {arg}\nUsage: {command}".format(
+            arg = sys.argv[1], command = sys.argv[0]))
 
     for torrent in rutracker.torrents.find(fields = [ "_id", "name", "fingerprint" ]):
         fingerprint = rutracker.torrents.get_fingerprint(torrent["name"])

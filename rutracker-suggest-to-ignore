@@ -20,9 +20,9 @@ def main():
 
     if torrents:
         table = Table([
-            Column(id="count",       name="Count", align=Column.ALIGN_RIGHT ),
-            Column(id="fingerprint", name="Group", align=Column.ALIGN_LEFT  ),
-            Column(id="name",        name="Name",  align=Column.ALIGN_LEFT, max_width=80),
+            Column("count",       "Count", align=Column.ALIGN_RIGHT ),
+            Column("fingerprint", "Group", align=Column.ALIGN_LEFT  ),
+            Column("name",        "Name",  align=Column.ALIGN_LEFT, max_width=80),
         ])
         table.add_rows(torrents)
         table.draw()

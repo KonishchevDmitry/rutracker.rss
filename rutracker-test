@@ -72,5 +72,8 @@ class TestFingerprint(unittest.TestCase):
         self.assertEqual("прокурорская проверка", get_fingerprint(
             "Прокурорская проверка эфир с 21.01.2013 по 08.02.2013 (Андрей Морозов, Константин Смирнов, Владимир Морозов) [2013, ТелеДектив, SATRip]"))
 
+        self.assertEqual("речные монстры", get_fingerprint(
+            "Речные монстры 5 сезон Премьера! / River monsters (Animal Planet / Discovery Channel) [2013, Документальный, SATRip]"))
+
 if __name__ == '__main__':
     unittest.main()

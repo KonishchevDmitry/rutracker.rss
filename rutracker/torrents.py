@@ -106,10 +106,31 @@ def get_fingerprint(torrent_name):
     # We need all names in lowercase for easier analysis
     torrent_name = torrent_name.lower()
 
+    # Try to get most possible short fingerprint -->
+    torrent_name = re.sub(
+        r"^«([^»]{6,})»", r"\1", torrent_name)
+
+    torrent_name = re.sub(
+        r'^"([^»]{6,})"', r"\1", torrent_name)
+
+    torrent_name = re.sub(
+        r"^([0-9a-zабвгдеёжзийклмнопрстуфхцчшщьъыэюя., \-:]{6,}?(?:[:.?!]| - | — |\|)).*", r"\1", torrent_name)
+    # Try to get most possible short fingerprint <--
+
+    # Drop all punctuation and other non-alphabet characters
+    characters = "abcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщьъыэюя"
+    torrent_name = torrent_name.replace(".", " ")
+    torrent_name = "".join(
+        c for c in torrent_name if c in " " + characters)
+
     # Drop any additional info: timestamps, release versions, etc.
     # -->
     torrent_name = torrent_name.replace("г.", "")
-    torrent_name = re.sub(r"(:?выпуск|выпуски|выпусков|обновлено|передачи за|серия из|серия|серии|эфир с|эфир от|эфиры от|satrip)(?:\s|\)|$)", "", torrent_name)
+    while True:
+        new_torrent_name = re.sub(r"(?:\s|\()(:?выпуск|выпуски|выпусков|обновлено|передачи за|серия из|сезон|серия|серии|премьера|эфир с|эфир от|эфиры от|satrip)(?:\s|\)|$)", "", torrent_name)
+        if new_torrent_name == torrent_name:
+            break
+        torrent_name = new_torrent_name
 
     for month in (
         "январь",   "января",
@@ -127,23 +148,6 @@ def get_fingerprint(torrent_name):
     ):
         torrent_name = torrent_name.replace(month, "")
     # <--
-
-    # Try to get most possible short fingerprint -->
-    torrent_name = re.sub(
-        r"^«([^»]{6,})»", r"\1", torrent_name)
-
-    torrent_name = re.sub(
-        r'^"([^»]{6,})"', r"\1", torrent_name)
-
-    torrent_name = re.sub(
-        r"^([0-9a-zабвгдеёжзийклмнопрстуфхцчшщьъыэюя., \-:]{6,}?(?:[:.?!]| - | — |\|)).*", r"\1", torrent_name)
-    # Try to get most possible short fingerprint <--
-
-    # Drop all punctuation and other non-alphabet characters
-    characters = "abcdefghijklmnopqrstuvwxyzабвгдеёжзийклмнопрстуфхцчшщьъыэюя"
-    torrent_name = torrent_name.replace(".", " ")
-    torrent_name = "".join(
-        c for c in torrent_name if c in " " + characters)
 
     # Drop several spaces
     torrent_name = re.sub(r"\s+", " ", torrent_name).strip()

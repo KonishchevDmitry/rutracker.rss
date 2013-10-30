@@ -1,0 +1,5 @@
+pcli
+psys
+pymongo
+PyRSS2Gen
+git+https://github.com/KonishchevDmitry/pycl.git#egg=pycl

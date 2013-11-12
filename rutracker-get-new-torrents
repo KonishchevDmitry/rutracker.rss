@@ -18,9 +18,8 @@ import tempfile
 import time
 import urllib.request
 
-from psys import eintr_retry
+import psys.daemon
 
-import pycl.daemon
 import pycl.log
 
 from pycl import constants
@@ -321,8 +320,8 @@ def main():
     pid_file = os.path.join(tempfile.gettempdir(), "rutracker-get-new-torrents")
 
     try:
-        pid_file_fd = pycl.daemon.acquire_pidfile(pid_file)
-    except pycl.daemon.PidFileLocked as e:
+        pid_file_fd = psys.daemon.acquire_pidfile(pid_file)
+    except psys.daemon.PidFileLockedError as e:
         LOG.error("Exiting: the PID file is locked by another process.")
     else:
         try:
@@ -330,8 +329,7 @@ def main():
         except TemporaryError as e:
             LOG.warning(e)
         finally:
-            eintr_retry(os.close)(pid_file_fd)
-            eintr_retry(os.unlink)(pid_file)
+            psys.daemon.release_pidfile(pid_file, pid_file_fd)
 
 
 def tag_regex(tag, tag_class = None, match_param = None, match_value = """([^'"]*)"""):

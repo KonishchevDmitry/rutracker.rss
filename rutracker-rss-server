@@ -15,7 +15,7 @@ from wsgiref.simple_server import make_server
 
 import PyRSS2Gen
 
-import pycl.log
+import pcli.log
 
 from pycl.core import Error
 
@@ -87,7 +87,7 @@ def serve(host, port):
     server.serve_forever()
 
 
-pycl.log.setup()
+pcli.log.setup()
 
 if __name__ == "__main__":
     serve("0.0.0.0", 8080)

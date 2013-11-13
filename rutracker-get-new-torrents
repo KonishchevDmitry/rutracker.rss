@@ -18,9 +18,8 @@ import tempfile
 import time
 import urllib.request
 
+import pcli.log
 import psys.daemon
-
-import pycl.log
 
 from pycl import constants
 from pycl.core import Error, LogicalError
@@ -310,7 +309,7 @@ def main():
             raise LogicalError()
     # Parsing command line arguments <--
 
-    pycl.log.setup(
+    pcli.log.setup(
         debug_mode = debug_mode | develop_mode,
         level = logging.ERROR if cron_mode else None)
 

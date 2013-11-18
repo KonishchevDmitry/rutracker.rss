@@ -1,7 +1,6 @@
 """Provides functions for managing torrent blacklist."""
 
-from pycl.core import Error
-
+from rutracker.core import Error
 from rutracker.database import coll
 
 
@@ -26,8 +25,8 @@ def remove(rule):
     """Removes the specified rule."""
 
     if not coll("blacklist").remove({ "_id": rule }, safe = True)["n"]:
-        raise Error("Rule '{rule}' doesn't exist in the blacklist.".format(
-            rule = _format_rule(rule)))
+        raise Error("Rule '{rule}' doesn't exist in the blacklist.",
+            rule = _format_rule(rule))
 
 
 def _format_rule(rule):

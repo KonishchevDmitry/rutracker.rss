@@ -21,10 +21,11 @@ import urllib.request
 import pcli.log
 import psys.daemon
 
-from pycl import constants
-from pycl.core import Error, LogicalError
+from pcore import constants
 
 import rutracker.torrents
+
+from rutracker.core import Error
 
 LOG = logging.getLogger("rutracker.rss")
 
@@ -37,9 +38,6 @@ _SCRIPT_PATH = os.path.realpath(__file__)
 
 class TemporaryError(Error):
     """Raised on a various termporary errors (network issues, etc)."""
-
-    def __init__(self, *args, **kwargs):
-        super(TemporaryError, self).__init__(*args, **kwargs)
 
 
 class NetworkError(TemporaryError):
@@ -90,7 +88,7 @@ class Rutracker:
                 timeout = constants.MINUTE_SECONDS).read().decode("cp1251")
         except Exception as e:
             self.__examine_error(e)
-            raise Error("Unable to fetch page {0}: {1}.", url, e)
+            raise Error("Unable to fetch page {}: {}.", url, e)
         finally:
             self.__last_request_time = time.time()
 
@@ -138,7 +136,7 @@ class Rutracker:
             self.__opener = opener
         except Exception as e:
             self.__examine_error(e)
-            raise Error("Unable to login to rutracker.org: {0}.", e)
+            raise Error("Unable to login to rutracker.org: {}.", e)
 
 
     def __start_search(self):
@@ -166,7 +164,7 @@ class Rutracker:
         except TemporaryError:
             raise
         except Exception as e:
-            raise Error("Failed to start torrent search: {0}.", e)
+            raise Error("Failed to start torrent search: {}.", e)
 
 
 
@@ -306,7 +304,7 @@ def main():
         elif option == "--develop-mode":
             develop_mode = True
         else:
-            raise LogicalError()
+            raise Error("Logical error.")
     # Parsing command line arguments <--
 
     pcli.log.setup(

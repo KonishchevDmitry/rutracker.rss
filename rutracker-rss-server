@@ -17,10 +17,10 @@ import PyRSS2Gen
 
 import pcli.log
 
-from pycl.core import Error
-
 import rutracker.torrents
+
 from rutracker import config
+from rutracker.core import Error
 
 LOG = logging.getLogger("rutracker.rss")
 

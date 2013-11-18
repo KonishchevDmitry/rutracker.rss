@@ -4,9 +4,8 @@
 
 import sys
 
-from pycl.core import Error
-
 from rutracker import blacklist
+from rutracker.core import Error
 
 
 def main():

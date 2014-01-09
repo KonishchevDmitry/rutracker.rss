@@ -146,7 +146,7 @@ def get_fingerprint(torrent_name):
         "ноябрь",   "ноября",
         "декабрь",  "декабря",
     ):
-        torrent_name = torrent_name.replace(month, "")
+        torrent_name = re.sub(r"\b" + month + r"\b", "", torrent_name)
     # <--
 
     # Drop several spaces

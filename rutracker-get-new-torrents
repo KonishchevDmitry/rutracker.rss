@@ -154,7 +154,7 @@ class Rutracker:
                 page, flags = re.IGNORECASE)
 
             if match is None:
-                if re.search(tag_regex("p") + "форум временно отключен</p>", page, flags = re.IGNORECASE):
+                if re.search(tag_regex("p") + "форум временно отключен", page, flags = re.IGNORECASE):
                     raise OnMaintenanceError()
                 else:
                     raise Error("Unable to obtain search ID")

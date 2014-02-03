@@ -19,13 +19,13 @@ def compact():
     """Compacts the database by removing data that is not already needed."""
 
     coll("torrents").remove({
-        "time": { "$lt": int(time.time()) - config.MAX_TORRENT_AGE } }, safe = True)
+        "time": { "$lt": int(time.time()) - config.MAX_TORRENT_AGE } })
 
     coll("torrents").update({
         "time": { "$lt": int(time.time()) - config.MAX_FEED_AGE }
     },{
         "$unset": { "description": True }
-    }, multi = True, safe = True)
+    }, multi = True)
 
     db().command("compact", "torrents")
 
@@ -197,7 +197,7 @@ def update(torrent_id, data, changed = False, upsert = False):
         update["$inc"] = { "revision": 1 }
 
     return coll("torrents").update({ "_id": torrent_id }, update,
-        upsert = upsert, safe = True)["updatedExisting"]
+        upsert = upsert)["updatedExisting"]
 
 
 def _blacklist_query():

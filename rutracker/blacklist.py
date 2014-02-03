@@ -12,7 +12,7 @@ def add(rule, regex = False):
     else:
         update = { "$unset": { "regex": True } }
 
-    coll("blacklist").update({ "_id": rule }, update, upsert = True, safe = True)
+    coll("blacklist").update({ "_id": rule }, update, upsert = True)
 
 
 def find():
@@ -24,7 +24,7 @@ def find():
 def remove(rule):
     """Removes the specified rule."""
 
-    if not coll("blacklist").remove({ "_id": rule }, safe = True)["n"]:
+    if not coll("blacklist").remove({ "_id": rule })["n"]:
         raise Error("Rule '{rule}' doesn't exist in the blacklist.",
             rule = _format_rule(rule))
 

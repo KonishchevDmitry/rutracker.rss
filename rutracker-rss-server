@@ -75,7 +75,7 @@ def application(environ, start_response):
         http_headers["Content-Type"] = "application/rss+xml"
         http_body = rss
     finally:
-        start_response(http_code.encode("utf-8"), [ ( k.encode("utf-8"), v.encode("utf-8") ) for k, v in http_headers.items() ])
+        start_response(http_code, [ (k, v) for k, v in http_headers.items() ])
         return [ http_body.encode("utf-8") ]
 
 

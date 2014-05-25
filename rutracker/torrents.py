@@ -107,6 +107,8 @@ def get_fingerprint(torrent_name):
     torrent_name = torrent_name.lower()
 
     # Try to get most possible short fingerprint -->
+    torrent_name = re.sub(r"^(national\s+geographic\s*:|наука\s+2\.0)\s+", "", torrent_name)
+
     torrent_name = re.sub(
         r"^«([^»]{6,})»", r"\1", torrent_name)
 

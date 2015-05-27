@@ -180,7 +180,7 @@ def get_new_torrents():
 
     # A regular expression for a link to torrent page on http://rutracker.org/
     torrent_regex = re.compile(
-        tag_regex("a", "tLink", "href", r"""[^'"]+/viewtopic\.php\?t=(\d+)""") + r"(.+?)</a>"
+        tag_regex("a", "tLink", "href", r"viewtopic\.php\?t=(\d+)") + r"(.+?)</a>"
         ".+" +
         tag_regex("td", "row4") + r"\s*<u>\s*(\d+)\s*</u>" +
         r"\s*<p>\s*\d{1,2}-(?:Янв|Фев|Мар|Апр|Май|Июн|Июл|Авг|Сен|Окт|Ноя|Дек)-\d{2}</p>",
@@ -214,7 +214,12 @@ def get_new_torrents():
 
         for page_torrent_id, torrent_html in enumerate(torrents_page.split('<tr class="tCenter hl-tr">')[1:]):
             torrent_number = page * torrents_per_page + page_torrent_id + 1
-            torrent_id, torrent_name, torrent_time = torrent_regex.search(torrent_html).group(1, 2, 3)
+
+            match = torrent_regex.search(torrent_html)
+            if not match:
+                raise Error("Unable to find a torrent in torrent list.")
+
+            torrent_id, torrent_name, torrent_time = match.group(1, 2, 3)
 
             torrent_id = int(torrent_id)
             if _DEVELOP_MODE:

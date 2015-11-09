@@ -41,7 +41,7 @@ def find(age = None, blocklist = False, sort = False, limit = None, fields = Non
     if blocklist:
         query.update(_blacklist_query())
 
-    torrents = coll("torrents").find(query, fields = fields)
+    torrents = coll("torrents").find(query, projection = fields)
 
     if sort:
         torrents = torrents.sort([( "time", pymongo.DESCENDING )])

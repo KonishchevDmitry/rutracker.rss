@@ -62,7 +62,7 @@ def application(environ, start_response):
                         url = rutracker.torrents.get_url(torrent["_id"]), time = torrent["time"]), isPermaLink = False),
                     pubDate = datetime.datetime.utcfromtimestamp(float(torrent["time"]))
                 ) for torrent in rutracker.torrents.find(
-                    age = config.MAX_FEED_AGE, blocklist = True, sort = True, limit = config.MAX_TORRENTS_IN_FEED,
+                    age = config.MAX_FEED_AGE, blacklist = True, sort = True, limit = config.MAX_TORRENTS_IN_FEED,
                     fields = [ "_id", "description", "name", "time" ])
             ]
         ).to_xml("utf-8")

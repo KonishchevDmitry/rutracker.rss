@@ -30,7 +30,7 @@ def compact():
     db().command("compact", "torrents")
 
 
-def find(age = None, blocklist = False, sort = False, limit = None, fields = None):
+def find(age = None, blacklist = False, sort = False, limit = None, fields = None):
     """Returns the specified torrents."""
 
     query = {}
@@ -38,7 +38,7 @@ def find(age = None, blocklist = False, sort = False, limit = None, fields = Non
     if age is not None:
         query["time"] = { "$gte": time.time() - age }
 
-    if blocklist:
+    if blacklist:
         query.update(_blacklist_query())
 
     torrents = coll("torrents").find(query, projection = fields)

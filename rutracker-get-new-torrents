@@ -85,7 +85,7 @@ class Rutracker:
         try:
             return self.__opener.open(url,
                 data if data is None else data.encode("ascii"),
-                timeout = constants.MINUTE_SECONDS).read().decode("cp1251")
+                timeout = constants.MINUTE_SECONDS).read().decode("cp1251", "replace")
         except Exception as e:
             self.__examine_error(e)
             raise Error("Unable to fetch page {}: {}.", url, e)

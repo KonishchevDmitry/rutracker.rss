@@ -10,10 +10,11 @@ from rutracker import blacklist
 def main():
     """The script's main function."""
 
-    if len(sys.argv) != 2:
-        sys.exit("Usage: {cmd} rule".format(cmd = sys.argv[0]))
+    if len(sys.argv) < 2:
+        sys.exit("Usage: {cmd} rule(s)".format(cmd = sys.argv[0]))
 
-    blacklist.add(sys.argv[1])
+    for rule in sys.argv[1:]:
+        blacklist.add(rule)
 
 
 if __name__ == "__main__":

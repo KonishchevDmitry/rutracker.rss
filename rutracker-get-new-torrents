@@ -1,10 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""
-Receives new torrents info from http://rutracker.org/ and stores them into the
-database.
-"""
+"""Receives new torrents info from rutracker.org and stores them into the database."""
 
 import errno
 import getopt
@@ -16,6 +13,7 @@ import socket
 import sys
 import tempfile
 import time
+import urllib.error
 import urllib.request
 
 import pcli.log
@@ -56,7 +54,7 @@ class OnMaintenanceError(TemporaryError):
 
 
 class Rutracker:
-    """Fetches pages from http://rutracker.org/."""
+    """Fetches pages from rutracker.org."""
 
     __opener = None
     """A URL opener."""
@@ -102,20 +100,23 @@ class Rutracker:
         if not page:
             return self.__search_page
 
-        return self.request("http://rutracker.org/forum/tracker.php?search_id={search_id}&start={start}".format(
+        return self.request("https://rutracker.org/forum/tracker.php?search_id={search_id}&start={start}".format(
             search_id = self.__search_id, start = page * 50))
 
 
     def __examine_error(self, error):
         """Examines an error."""
 
-        if (
-            isinstance(error, EnvironmentError) and
-            error.errno == errno.ECONNREFUSED
-        ):
+        if isinstance(error, EnvironmentError) and error.errno == errno.ECONNREFUSED:
             raise OnMaintenanceError()
 
-        if isinstance(error, ( socket.error, IOError )):
+        if (
+            isinstance(error, urllib.error.URLError) and
+            isinstance(error.reason, socket.gaierror) and error.reason.errno in (socket.EAI_NODATA, socket.EAI_NONAME)
+        ):
+            return
+
+        if isinstance(error, (socket.error, IOError)):
             raise NetworkError(error)
 
 
@@ -129,7 +130,7 @@ class Rutracker:
             cookies = http.cookiejar.FileCookieJar("cookies")
             opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookies))
 
-            opener.open("http://login.rutracker.org/forum/login.php",
+            opener.open("https://rutracker.org/forum/login.php",
                 "login_username={0}&login_password={1}&login=%C2%F5%EE%E4".format(login, password).encode("ascii"),
                 timeout = constants.MINUTE_SECONDS)
 
@@ -147,7 +148,7 @@ class Rutracker:
             for forum_id in (46, 56, 98, 103, 249, 314, 500, 552, 709, 1260, 2076, 2123, 2139):
                 data += "&f%5B%5D={}".format(forum_id)
 
-            page = self.request("http://rutracker.org/forum/tracker.php", data)
+            page = self.request("https://rutracker.org/forum/tracker.php", data)
 
             match = re.search(
                 tag_regex("a", "pg", "href", r"tracker.php\?search_id=([^&]+)[^'\"]*?"),
@@ -178,7 +179,7 @@ def get_new_torrents():
 
     LOG.info("Search for new torrents...")
 
-    # A regular expression for a link to torrent page on http://rutracker.org/
+    # A regular expression for a link to torrent page on rutracker.org
     torrent_regex = re.compile(
         tag_regex("a", "tLink", "href", r"viewtopic\.php\?t=(\d+)") + r"(.+?)</a>"
         ".+" +

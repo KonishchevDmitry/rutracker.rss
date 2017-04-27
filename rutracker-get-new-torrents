@@ -155,12 +155,7 @@ class Rutracker:
                 page, flags = re.IGNORECASE)
 
             if match is None:
-                lower_page = page.lower()
-
-                if (
-                    "форум временно отключен" in lower_page or
-                    "в вашем браузере должны быть включены куки и javascript" in lower_page
-                ):
+                if "По техническим причинам форум временно недоступен" in page:
                     raise OnMaintenanceError()
                 else:
                     raise Error("Unable to obtain search ID")

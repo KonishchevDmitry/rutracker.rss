@@ -187,8 +187,7 @@ def get_new_torrents():
 
     # A reqular expression that matches torrent description on its page
     torrent_description_regex = re.compile(
-        tag_regex("div", "post_body") + "(.+?)" +
-        tag_regex("div", match_param = "id", match_value = "tor-reged"), re.IGNORECASE | re.DOTALL)
+        tag_regex("div", "post_body") + "(.+?)<!--/post_body-->", re.IGNORECASE | re.DOTALL)
 
     if not _DEVELOP_MODE:
         client = Rutracker()

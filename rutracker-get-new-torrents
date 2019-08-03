@@ -181,7 +181,7 @@ def get_new_torrents():
     torrent_regex = re.compile(
         tag_regex("a", "tLink", "href", r"viewtopic\.php\?t=(\d+)") + r"(.+?)</a>"
         ".+" +
-        tag_regex("td", "row4") + r"\s*<u>\s*(\d+)\s*</u>" +
+        tag_regex("td", "row4", "data-ts_text", "(\d+)") +
         r"\s*<p>\s*\d{1,2}-(?:Янв|Фев|Мар|Апр|Май|Июн|Июл|Авг|Сен|Окт|Ноя|Дек)-\d{2}</p>",
         re.IGNORECASE | re.DOTALL | re.VERBOSE)
 

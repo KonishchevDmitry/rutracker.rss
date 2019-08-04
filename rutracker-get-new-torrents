@@ -210,7 +210,7 @@ def get_new_torrents():
 
         counter = 0
 
-        for page_torrent_id, torrent_html in enumerate(torrents_page.split('<tr class="tCenter hl-tr">')[1:]):
+        for page_torrent_id, torrent_html in enumerate(re.split(tag_regex("tr", "tCenter hl-tr"), torrents_page)[1:]):
             torrent_number = page * torrents_per_page + page_torrent_id + 1
 
             match = torrent_regex.search(torrent_html)
